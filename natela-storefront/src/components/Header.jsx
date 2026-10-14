@@ -38,12 +38,6 @@ export default function Header() {
           <a href="#sale">On Sale</a>
           <a href="#collection">Collections</a>
           <a href="#help">Help</a>
-          <NavLink
-            to="/admin"
-            className={({ isActive }) => (isActive ? "active" : "")}
-          >
-            Admin
-          </NavLink>
         </nav>
 
         <div className="header__tools">
@@ -71,6 +65,16 @@ export default function Header() {
             </svg>
             {totals.count > 0 && <span className="cart-count">{totals.count}</span>}
           </Link>
+
+          <button
+            aria-label="Sign in"
+            style={{ background: "none", border: "none", padding: 0, display: "flex" }}
+          >
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 21a8 8 0 0 1 16 0" />
+            </svg>
+          </button>
         </div>
       </header>
     </>
