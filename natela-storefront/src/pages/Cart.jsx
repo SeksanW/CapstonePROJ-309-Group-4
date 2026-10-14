@@ -1,16 +1,59 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useCart, money } from "../context/CartContext";
+import { useCart, money, MAX_QTY_PER_LINE } from "../context/CartContext";
 import { useProducts } from "../context/ProductsContext";
+import { useAuth, isSignInCancelled } from "../context/AuthContext";
+import { api } from "../lib/api";
 import ShortsIcon from "../components/ShortsIcon";
 
 /* SCRUM-5 — Cart.
-   Guest checkout only: the client does not want customer accounts.
+   Checkout needs a Google sign-in (the first one creates the
+   account), then order-service prices the cart and sends the
+   shopper to Stripe's hosted payment page.
    Bundle discount, worldwide shipping and GST are worked out in
-   CartContext so the numbers live in one place. */
+   CartContext for display; the server recalculates them. */
+
+/* Turns order-service's 409 details into lines the shopper can act on. */
+function describeProblem(problem, items) {
+  const item = items.find((i) => i.productId === problem.productId && i.size === problem.size);
+  const name = item ? `${item.name} (size ${problem.size})` : `An item (size ${problem.size})`;
+  if (problem.reason === "insufficient_stock") {
+    return problem.available === 0
+      ? `${name} is sold out — remove it to continue.`
+      : `${name}: only ${problem.available} left — lower the quantity to continue.`;
+  }
+  return `${name} is no longer available — remove it to continue.`;
+}
 
 export default function Cart() {
   const { items, removeItem, setQty, totals } = useCart();
   const { products } = useProducts();
+  const { user, ready, signIn } = useAuth();
+  const [checkingOut, setCheckingOut] = useState(false);
+  const [checkoutError, setCheckoutError] = useState(null);
+
+  /* The problems listed are about the cart as it was — clear them once
+     the shopper changes it. */
+  useEffect(() => setCheckoutError(null), [items]);
+
+  async function proceedToCheckout() {
+    setCheckoutError(null);
+    setCheckingOut(true);
+    try {
+      /* signIn() runs before any await so the popup isn't blocked. */
+      const shopper = user ?? (await signIn());
+      const token = await shopper.getIdToken();
+      const { url } = await api("/orders/checkout", {
+        method: "POST",
+        token,
+        body: { items: items.map(({ productId, size, qty }) => ({ productId, size, qty })) },
+      });
+      window.location.assign(url); // Stripe's payment page
+    } catch (err) {
+      if (!isSignInCancelled(err)) setCheckoutError(err);
+      setCheckingOut(false);
+    }
+  }
 
   /* Stand-in for the AI recommendation service (course Requirement 05).
      Today it just suggests live products that are not already in the
@@ -127,6 +170,7 @@ export default function Cart() {
                     <span>{item.qty}</span>
                     <button
                       onClick={() => setQty(item.key, item.qty + 1)}
+                      disabled={item.qty >= MAX_QTY_PER_LINE}
                       aria-label="Increase quantity"
                     >
                       +
@@ -236,35 +280,48 @@ export default function Cart() {
               Canadian dollars · duties calculated at checkout
             </div>
 
-            <button className="btn btn--grad btn--block btn--lg">
-              Checkout as guest
+            {checkoutError && (
+              <div
+                role="alert"
+                className="notice"
+                style={{ marginBottom: 14, flexDirection: "column", alignItems: "flex-start", gap: 4 }}
+              >
+                {/* Only a 409 lists cart problems; other errors (e.g. a 400)
+                    have a differently shaped `details`, so show the message. */}
+                {checkoutError.status === 409 && checkoutError.details?.length ? (
+                  checkoutError.details.map((p) => (
+                    <div key={`${p.productId}__${p.size}`} style={{ fontSize: 13, color: "var(--brand-red)" }}>
+                      {describeProblem(p, items)}
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ fontSize: 13, color: "var(--brand-red)" }}>
+                    {checkoutError.message || "Checkout didn't start. Please try again."}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <button
+              className="btn btn--grad btn--block btn--lg"
+              onClick={proceedToCheckout}
+              /* Until Firebase has restored the session, `user` is null even
+                 for a signed-in shopper, and a click would open the popup. */
+              disabled={checkingOut || !ready}
+            >
+              {checkingOut ? "Starting checkout…" : "Proceed to checkout"}
             </button>
             <div
               style={{
                 textAlign: "center",
                 fontSize: 12,
                 color: "var(--ink-faint)",
-                margin: "10px 0 20px",
+                margin: "10px 0 0",
               }}
             >
-              No account needed — just an email for your receipt
-            </div>
-
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-              <div style={{ flex: 1, height: 1, background: "var(--line)" }} />
-              <span style={{ fontSize: 11, color: "var(--ink-faint)", letterSpacing: "0.06em" }}>
-                OR PAY WITH
-              </span>
-              <div style={{ flex: 1, height: 1, background: "var(--line)" }} />
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
-              <button className="btn btn--dark btn--block" style={{ height: 44, padding: 0, fontSize: 13.5 }}>
-                Apple Pay
-              </button>
-              <button className="btn btn--quiet btn--block" style={{ height: 44, padding: 0, fontSize: 13.5 }}>
-                PayPal
-              </button>
+              {user
+                ? `Signed in as ${user.email}`
+                : "You'll sign in with Google — first time? That creates your account."}
             </div>
 
             <div

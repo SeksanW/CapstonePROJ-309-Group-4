@@ -3,11 +3,9 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Store from "./pages/Store";
 import Cart from "./pages/Cart";
-import Admin from "./pages/Admin";
+import CheckoutSuccess from "./pages/CheckoutSuccess";
 
-/* Two layouts:
-   · the storefront, which has the header and footer
-   · the admin, which is its own screen with no shop chrome */
+/* Storefront layout: header and footer around every page. */
 
 function StoreLayout() {
   return (
@@ -27,8 +25,8 @@ export default function App() {
       <Route element={<StoreLayout />}>
         <Route path="/" element={<Store />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout/success" element={<CheckoutSuccess />} />
       </Route>
-      <Route path="/admin" element={<Admin />} />
       <Route
         path="*"
         element={
