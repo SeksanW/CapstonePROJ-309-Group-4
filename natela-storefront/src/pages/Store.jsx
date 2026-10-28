@@ -11,10 +11,10 @@ import ShortsIcon from "../components/ShortsIcon";
    collection story, bundle deal, help links. */
 
 export default function Store() {
-  const { products } = useProducts();
+  const { products, loading, error } = useProducts();
   const [sportFilter, setSportFilter] = useState(null);
 
-  /* Drafts never show on the storefront — only the admin sees them. */
+  /* The API only returns live products; the filter stays as a guard. */
   const live = useMemo(
     () => products.filter((p) => p.status === "live"),
     [products]
@@ -179,12 +179,34 @@ export default function Store() {
           <h2 className="h2">
             {sportFilter ? `${sportFilter} shorts` : "New arrivals"}
           </h2>
-          <span className="muted">
-            {visible.length} {visible.length === 1 ? "item" : "items"}
-          </span>
+          {!loading && !error && (
+            <span className="muted">
+              {visible.length} {visible.length === 1 ? "item" : "items"}
+            </span>
+          )}
         </div>
 
-        {visible.length === 0 ? (
+        {loading ? (
+          <div className="empty panel">
+            <p style={{ fontWeight: 500 }}>Loading products…</p>
+          </div>
+        ) : error ? (
+          <div className="empty panel">
+            <p style={{ fontWeight: 500, marginBottom: 6 }}>
+              Couldn't load products
+            </p>
+            <p style={{ fontSize: 13.5 }}>
+              Check your connection and{" "}
+              <button
+                className="btn btn--quiet"
+                style={{ marginLeft: 6 }}
+                onClick={() => window.location.reload()}
+              >
+                Try again
+              </button>
+            </p>
+          </div>
+        ) : visible.length === 0 ? (
           <div className="empty panel">
             <p style={{ fontWeight: 500, marginBottom: 6 }}>
               Nothing here yet

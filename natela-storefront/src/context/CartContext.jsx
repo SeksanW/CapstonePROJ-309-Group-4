@@ -11,12 +11,11 @@ const STORAGE_KEY = "natela.cart";
      · Free worldwide shipping once the order passes $150
      · Otherwise shipping is a flat $14
      · GST 5%, prices in CAD
-     · Guest checkout — no account, so the cart lives in memory
+     · Checkout needs a Google sign-in; shopping doesn't
 
-   WHEN THE BACKEND IS READY:
-   this becomes order-service. addItem posts to the cart API,
-   and the totals below should be recalculated on the SERVER
-   too — never trust prices worked out in the browser.
+   The totals below are for display only. At checkout the cart
+   lines go to order-service, which looks up the real prices and
+   recalculates everything on the server.
    --------------------------------------------------------- */
 
 const CartContext = createContext(null);
@@ -27,13 +26,16 @@ const FREE_SHIPPING_OVER = 150;
 const FLAT_SHIPPING = 14;
 const TAX_RATE = 0.05;
 
+/* order-service rejects more than this per cart line. */
+export const MAX_QTY_PER_LINE = 20;
+
 /* One cart line is identified by product + size, not product alone,
    so a medium and a large of the same shorts are separate lines. */
 const lineKey = (productId, size) => `${productId}__${size}`;
 
 export function CartProvider({ children }) {
-  /* A guest cart that survives a refresh. Normal even with a real
-     backend — there is no account to hang the cart on. */
+  /* Kept in the browser so it survives a refresh and the trip to
+     Stripe and back. Shoppers can fill it before signing in. */
   const [items, setItems] = useState(() => load(STORAGE_KEY, []));
 
   useEffect(() => {
@@ -46,7 +48,7 @@ export function CartProvider({ children }) {
       const existing = prev.find((i) => i.key === key);
       if (existing) {
         return prev.map((i) =>
-          i.key === key ? { ...i, qty: i.qty + qty } : i
+          i.key === key ? { ...i, qty: Math.min(MAX_QTY_PER_LINE, i.qty + qty) } : i
         );
       }
       return [
@@ -71,7 +73,8 @@ export function CartProvider({ children }) {
 
   function setQty(key, qty) {
     if (qty < 1) return removeItem(key);
-    setItems((prev) => prev.map((i) => (i.key === key ? { ...i, qty } : i)));
+    const capped = Math.min(MAX_QTY_PER_LINE, qty);
+    setItems((prev) => prev.map((i) => (i.key === key ? { ...i, qty: capped } : i)));
   }
 
   function clear() {
