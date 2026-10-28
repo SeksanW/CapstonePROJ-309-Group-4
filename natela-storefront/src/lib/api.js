@@ -1,9 +1,9 @@
 /* ---------------------------------------------------------
-   Calls to the backend gateway (VITE_API_URL in .env.local).
+  Calls to the backend gateway (VITE_API_URL in .env.local).
 
-   Errors from the API look like { error, details } — they are
-   thrown as ApiError so screens can show the message, and the
-   cart can list each problem in `details`.
+  Errors from the API look like { error, details } — they are
+  thrown as ApiError so screens can show the message, and the
+  cart can list each problem in `details`.
    --------------------------------------------------------- */
 
 export const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8080").replace(/\/$/, "");
