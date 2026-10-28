@@ -1,5 +1,6 @@
 import { NavLink, Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { useAuth, isSignInCancelled } from "../context/AuthContext";
 
 /* Site header. The logo is a Poppins stand-in for the real
    wordmark — swap in the supplied logo file before the client
@@ -7,6 +8,17 @@ import { useCart } from "../context/CartContext";
 
 export default function Header() {
   const { totals } = useCart();
+  const { user, signIn, signOut } = useAuth();
+
+  function handleAccountClick() {
+    if (user) {
+      signOut();
+    } else {
+      signIn().catch((err) => {
+        if (!isSignInCancelled(err)) console.error(err);
+      });
+    }
+  }
 
   return (
     <>
@@ -67,10 +79,12 @@ export default function Header() {
           </Link>
 
           <button
-            aria-label="Sign in"
+            aria-label={user ? `Sign out (${user.email})` : "Sign in"}
+            title={user ? `Signed in as ${user.email}` : "Sign in"}
+            onClick={handleAccountClick}
             style={{ background: "none", border: "none", padding: 0, display: "flex" }}
           >
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke={user ? "var(--brand-red)" : "#111"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="8" r="4" />
               <path d="M4 21a8 8 0 0 1 16 0" />
             </svg>
