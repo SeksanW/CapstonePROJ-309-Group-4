@@ -1,8 +1,9 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useProducts } from "../context/ProductsContext";
 import { money } from "../context/CartContext";
 import { helpLinks } from "../data/products";
+import { api } from "../lib/api";
 import ProductCard from "../components/ProductCard";
 import ShortsIcon from "../components/ShortsIcon";
 
@@ -12,6 +13,27 @@ import ShortsIcon from "../components/ShortsIcon";
 
 export default function Store() {
   const { products } = useProducts();
+  const [pageContent, setPageContent] = useState({});
+
+  /* The hero and collection banners are edited separately, through the
+     admin's "Main page edits" screen (GET /page-content) — not tied to
+     any product, so a product's photo should never end up here. */
+  useEffect(() => {
+    let cancelled = false;
+    api("/page-content")
+      .then((data) => {
+        if (!cancelled) setPageContent(data ?? {});
+      })
+      .catch(() => {
+        /* Banners just fall back to the placeholder icon below. */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const hero = pageContent.hero ?? {};
+  const collection = pageContent.collection ?? {};
 
   /* The API only returns live products; the filter stays as a guard. */
   const live = useMemo(
@@ -24,10 +46,9 @@ export default function Store() {
     [live]
   );
 
-  /* Hero and collection banners just spotlight live products from the
-     catalogue — no separate "marketing image" endpoint exists yet. */
+  /* The featured product below the hero is the only spot that's
+     deliberately tied to a real product, not page content. */
   const featured = live[0] ?? null;
-  const collectionProduct = live[1] ?? live[0] ?? null;
 
   return (
     <>
@@ -49,13 +70,13 @@ export default function Store() {
             display: "flex",
             alignItems: "center",
             justifyContent: "flex-end",
-            paddingRight: featured?.image ? 0 : 80,
+            paddingRight: hero.image ? 0 : 80,
           }}
         >
-          {featured?.image ? (
+          {hero.image ? (
             <img
-              src={featured.image}
-              alt={featured.name}
+              src={hero.image}
+              alt=""
               style={{ width: "48%", height: "100%", objectFit: "cover" }}
             />
           ) : (
@@ -186,10 +207,10 @@ export default function Store() {
               justifyContent: "center",
             }}
           >
-            {collectionProduct?.image ? (
+            {collection.image ? (
               <img
-                src={collectionProduct.image}
-                alt={collectionProduct.name}
+                src={collection.image}
+                alt=""
                 style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
               />
             ) : (
