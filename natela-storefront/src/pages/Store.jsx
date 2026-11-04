@@ -148,6 +148,23 @@ export default function Store() {
         </section>
       )}
 
+      {/* ---------- ALL PRODUCTS ---------- */}
+      {live.length > 0 && (
+        <section id="new" className="page" style={{ paddingTop: 64 }}>
+          <div style={{ textAlign: "center", marginBottom: 28 }}>
+            <span className="eyebrow">SHOP ALL</span>
+            <h2 className="h2" style={{ marginTop: 8 }}>
+              New arrivals
+            </h2>
+          </div>
+          <div className="grid grid--3">
+            {live.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* ---------- ON SALE ---------- */}
       {onSale.length > 0 && (
         <section
