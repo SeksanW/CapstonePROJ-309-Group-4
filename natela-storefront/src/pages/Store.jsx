@@ -4,6 +4,7 @@ import { useProducts } from "../context/ProductsContext";
 import { money } from "../context/CartContext";
 import { helpLinks } from "../data/products";
 import ProductCard from "../components/ProductCard";
+import ShortsIcon from "../components/ShortsIcon";
 
 /* SCRUM-8 — Store page.
    The main page: hero, product grid, sale row,
@@ -23,7 +24,10 @@ export default function Store() {
     [live]
   );
 
+  /* Hero and collection banners just spotlight live products from the
+     catalogue — no separate "marketing image" endpoint exists yet. */
   const featured = live[0] ?? null;
+  const collectionProduct = live[1] ?? live[0] ?? null;
 
   return (
     <>
@@ -43,14 +47,20 @@ export default function Store() {
             position: "absolute",
             inset: 0,
             display: "flex",
+            alignItems: "center",
             justifyContent: "flex-end",
+            paddingRight: featured?.image ? 0 : 80,
           }}
         >
-          <img
-            src="/images/natela/4-REN02747.jpg"
-            alt="Pair of Natela Flame series Muay Thai shorts"
-            style={{ width: "48%", height: "100%", objectFit: "cover" }}
-          />
+          {featured?.image ? (
+            <img
+              src={featured.image}
+              alt={featured.name}
+              style={{ width: "48%", height: "100%", objectFit: "cover" }}
+            />
+          ) : (
+            <ShortsIcon size={360} color="#DCDCD7" stroke={1.1} />
+          )}
         </div>
 
         <div
@@ -167,12 +177,24 @@ export default function Store() {
             overflow: "hidden",
           }}
         >
-          <div style={{ minHeight: 340 }}>
-            <img
-              src="/images/natela/9-REN03140.jpg"
-              alt="Fighters training in Natela Flame series shorts"
-              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-            />
+          <div
+            style={{
+              background: "var(--surface-grey)",
+              minHeight: 340,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {collectionProduct?.image ? (
+              <img
+                src={collectionProduct.image}
+                alt={collectionProduct.name}
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+              />
+            ) : (
+              <ShortsIcon size={150} stroke={1.3} />
+            )}
           </div>
           <div
             style={{
