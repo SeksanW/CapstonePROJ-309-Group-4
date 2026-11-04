@@ -200,15 +200,6 @@ textarea.fld {
   border-bottom: 1px solid var(--line);
   gap: var(--space-4);
 }
-.header__nav {
-  display: flex;
-  gap: 34px;
-  font-size: 14px;
-  font-weight: 500;
-}
-.header__nav a.active {
-  color: var(--brand-red);
-}
 .header__tools {
   display: flex;
   align-items: center;
@@ -614,9 +605,6 @@ tbody tr:hover {
   }
   .footer__grid {
     grid-template-columns: 1fr 1fr;
-  }
-  .header__nav {
-    display: none;
   }
 }
 @media (max-width: 520px) {

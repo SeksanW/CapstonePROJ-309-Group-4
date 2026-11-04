@@ -1,18 +1,16 @@
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useProducts } from "../context/ProductsContext";
 import { money } from "../context/CartContext";
-import { sports, helpLinks } from "../data/products";
+import { helpLinks } from "../data/products";
 import ProductCard from "../components/ProductCard";
-import ShortsIcon from "../components/ShortsIcon";
 
 /* SCRUM-8 — Store page.
-   The main page: hero, shop by sport, product grid, sale row,
+   The main page: hero, product grid, sale row,
    collection story, bundle deal, help links. */
 
 export default function Store() {
-  const { products, loading, error } = useProducts();
-  const [sportFilter, setSportFilter] = useState(null);
+  const { products } = useProducts();
 
   /* The API only returns live products; the filter stays as a guard. */
   const live = useMemo(
@@ -20,17 +18,12 @@ export default function Store() {
     [products]
   );
 
-  const visible = useMemo(
-    () => (sportFilter ? live.filter((p) => p.sport === sportFilter) : live),
-    [live, sportFilter]
-  );
-
   const onSale = useMemo(
     () => live.filter((p) => p.comparePrice && p.comparePrice > p.price),
     [live]
   );
 
-  const countBySport = (name) => live.filter((p) => p.sport === name).length;
+  const featured = live[0] ?? null;
 
   return (
     <>
@@ -46,17 +39,18 @@ export default function Store() {
         }}
       >
         <div
-          aria-hidden="true"
           style={{
             position: "absolute",
             inset: 0,
             display: "flex",
-            alignItems: "center",
             justifyContent: "flex-end",
-            paddingRight: 80,
           }}
         >
-          <ShortsIcon size={360} color="#DCDCD7" stroke={1.1} />
+          <img
+            src="/images/natela/4-REN02747.jpg"
+            alt="Pair of Natela Flame series Muay Thai shorts"
+            style={{ width: "48%", height: "100%", objectFit: "cover" }}
+          />
         </div>
 
         <div
@@ -108,128 +102,20 @@ export default function Store() {
         </div>
       </section>
 
-      {/* ---------- SHOP BY SPORT ---------- */}
-      <section id="sports" className="page" style={{ paddingTop: 72 }}>
-        <div className="row-between" style={{ marginBottom: 26 }}>
-          <h2 className="h2">Shop by sport</h2>
-          {sportFilter && (
-            <button className="btn btn--quiet" onClick={() => setSportFilter(null)}>
-              Clear filter
-            </button>
-          )}
-        </div>
-
-        <div className="grid grid--4" style={{ gap: 16 }}>
-          {sports.map((s) => {
-            const active = sportFilter === s.name;
-            return (
-              <button
-                key={s.slug}
-                onClick={() => setSportFilter(active ? null : s.name)}
-                style={{
-                  background: active ? "var(--ink)" : "#fff",
-                  color: active ? "#fff" : "var(--ink)",
-                  border: `1px solid ${active ? "var(--ink)" : "var(--line)"}`,
-                  borderRadius: "var(--radius-lg)",
-                  padding: "26px 22px",
-                  minHeight: 130,
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  textAlign: "left",
-                  transition: "transform .2s ease, background .2s ease",
-                }}
-              >
-                <svg
-                  width="26"
-                  height="26"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke={active ? "#fff" : "var(--brand-red)"}
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                  aria-hidden="true"
-                >
-                  <circle cx="12" cy="12" r="9" />
-                  <path d="M12 3v18M3 12h18" />
-                </svg>
-                <div>
-                  <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 3 }}>
-                    {s.name}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 12.5,
-                      color: active ? "rgba(255,255,255,0.7)" : "var(--ink-muted)",
-                    }}
-                  >
-                    {countBySport(s.name)} items
-                  </div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* ---------- PRODUCT GRID ---------- */}
-      <section id="new" className="page" style={{ paddingTop: 64 }}>
-        <div className="row-between" style={{ marginBottom: 26 }}>
-          <h2 className="h2">
-            {sportFilter ? `${sportFilter} shorts` : "New arrivals"}
-          </h2>
-          {!loading && !error && (
-            <span className="muted">
-              {visible.length} {visible.length === 1 ? "item" : "items"}
-            </span>
-          )}
-        </div>
-
-        {loading ? (
-          <div className="empty panel">
-            <p style={{ fontWeight: 500 }}>Loading products…</p>
+      {/* ---------- FEATURED PRODUCT ---------- */}
+      {featured && (
+        <section className="page" style={{ paddingTop: 64 }}>
+          <div style={{ textAlign: "center", marginBottom: 28 }}>
+            <span className="eyebrow">FLAME SERIES</span>
+            <h2 className="h2" style={{ marginTop: 8 }}>
+              Pick your size
+            </h2>
           </div>
-        ) : error ? (
-          <div className="empty panel">
-            <p style={{ fontWeight: 500, marginBottom: 6 }}>
-              Couldn't load products
-            </p>
-            <p style={{ fontSize: 13.5 }}>
-              Check your connection and{" "}
-              <button
-                className="btn btn--quiet"
-                style={{ marginLeft: 6 }}
-                onClick={() => window.location.reload()}
-              >
-                Try again
-              </button>
-            </p>
+          <div style={{ maxWidth: 320, margin: "0 auto" }}>
+            <ProductCard product={featured} />
           </div>
-        ) : visible.length === 0 ? (
-          <div className="empty panel">
-            <p style={{ fontWeight: 500, marginBottom: 6 }}>
-              Nothing here yet
-            </p>
-            <p style={{ fontSize: 13.5 }}>
-              No products in this category.{" "}
-              <button
-                className="btn btn--quiet"
-                style={{ marginLeft: 6 }}
-                onClick={() => setSportFilter(null)}
-              >
-                Show everything
-              </button>
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid--4">
-            {visible.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* ---------- ON SALE ---------- */}
       {onSale.length > 0 && (
@@ -281,16 +167,12 @@ export default function Store() {
             overflow: "hidden",
           }}
         >
-          <div
-            style={{
-              background: "var(--surface-grey)",
-              minHeight: 340,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <ShortsIcon size={150} stroke={1.3} />
+          <div style={{ minHeight: 340 }}>
+            <img
+              src="/images/natela/9-REN03140.jpg"
+              alt="Fighters training in Natela Flame series shorts"
+              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+            />
           </div>
           <div
             style={{
