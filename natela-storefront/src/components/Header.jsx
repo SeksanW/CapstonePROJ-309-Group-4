@@ -22,10 +22,6 @@ export default function Header() {
 
   return (
     <>
-      <div className="announce">
-        Free worldwide shipping on orders over $150 CAD
-      </div>
-
       <header className="header">
         <Link to="/" aria-label="Natela Fit home" style={{ display: "flex", gap: 3 }}>
           <span className="logo">NATELA</span>

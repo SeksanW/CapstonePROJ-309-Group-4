@@ -237,15 +237,6 @@ textarea.fld {
   align-items: center;
   justify-content: center;
 }
-.announce {
-  background: var(--brand-black);
-  color: #fff;
-  text-align: center;
-  padding: 11px 16px;
-  font-size: 12.5px;
-  font-weight: 500;
-}
-
 /* ---------- product card ---------- */
 .grid {
   display: grid;
@@ -353,17 +344,6 @@ textarea.fld {
   display: flex;
   align-items: center;
   gap: 13px;
-}
-.progress {
-  height: 5px;
-  background: #f0f0ed;
-  border-radius: 3px;
-  overflow: hidden;
-}
-.progress__fill {
-  height: 100%;
-  background: var(--brand-gradient);
-  transition: width 0.3s ease;
 }
 .empty {
   text-align: center;

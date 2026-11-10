@@ -8,8 +8,7 @@ const STORAGE_KEY = "natela.cart";
 
    Rules that came from the client brief:
      · Bundle deal: buy any 2 pairs, take $30 off
-     · Free worldwide shipping once the order passes $150
-     · Otherwise shipping is a flat $14
+     · Shipping is a flat $14
      · GST 5%, prices in CAD
      · Checkout needs a Google sign-in; shopping doesn't
 
@@ -22,7 +21,6 @@ const CartContext = createContext(null);
 
 const BUNDLE_MIN_ITEMS = 2;
 const BUNDLE_DISCOUNT = 30;
-const FREE_SHIPPING_OVER = 150;
 const FLAT_SHIPPING = 14;
 const TAX_RATE = 0.05;
 
@@ -86,15 +84,9 @@ export function CartProvider({ children }) {
     const subtotal = items.reduce((n, i) => n + i.price * i.qty, 0);
     const bundleDiscount = count >= BUNDLE_MIN_ITEMS ? BUNDLE_DISCOUNT : 0;
     const afterDiscount = Math.max(0, subtotal - bundleDiscount);
-    const shipping =
-      count === 0 ? 0 : afterDiscount >= FREE_SHIPPING_OVER ? 0 : FLAT_SHIPPING;
+    const shipping = count === 0 ? 0 : FLAT_SHIPPING;
     const tax = afterDiscount * TAX_RATE;
     const total = afterDiscount + shipping + tax;
-    const awayFromFreeShipping = Math.max(0, FREE_SHIPPING_OVER - afterDiscount);
-    const shippingProgress = Math.min(
-      100,
-      (afterDiscount / FREE_SHIPPING_OVER) * 100
-    );
 
     return {
       count,
@@ -103,8 +95,6 @@ export function CartProvider({ children }) {
       shipping,
       tax,
       total,
-      awayFromFreeShipping,
-      shippingProgress,
     };
   }, [items]);
 
