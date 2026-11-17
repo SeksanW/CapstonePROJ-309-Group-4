@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { api } from "../lib/api";
+import { withPhoto } from "../lib/productPhotos";
 
 /* Old builds kept their own copy of the catalogue here. The server
    owns it now, so throw that copy away. */
@@ -34,7 +35,9 @@ export function ProductsProvider({ children }) {
     let cancelled = false;
     api("/products")
       .then((data) => {
-        if (!cancelled) setProducts(data);
+        /* Attach the client's photography where the API has no
+           image yet. Harmless once the backend sends real paths. */
+        if (!cancelled) setProducts(data.map(withPhoto));
       })
       .catch((err) => {
         if (!cancelled) setError(err.message);
