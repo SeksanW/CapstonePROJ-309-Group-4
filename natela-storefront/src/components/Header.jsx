@@ -1,4 +1,4 @@
-import { NavLink, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useAuth, isSignInCancelled } from "../context/AuthContext";
 
@@ -22,10 +22,6 @@ export default function Header() {
 
   return (
     <>
-      <div className="announce">
-        Free worldwide shipping on orders over $150 CAD
-      </div>
-
       <header className="header">
         <Link to="/" aria-label="Natela Fit home" style={{ display: "flex", gap: 3 }}>
           <span className="logo">NATELA</span>
@@ -41,16 +37,6 @@ export default function Header() {
             ™
           </span>
         </Link>
-
-        <nav className="header__nav">
-          <NavLink to="/" className={({ isActive }) => (isActive ? "active" : "")} end>
-            Shop
-          </NavLink>
-          <a href="#sports">By Sport</a>
-          <a href="#sale">On Sale</a>
-          <a href="#collection">Collections</a>
-          <a href="#help">Help</a>
-        </nav>
 
         <div className="header__tools">
           <div className="currency">

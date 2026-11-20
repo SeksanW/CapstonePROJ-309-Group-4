@@ -10,8 +10,8 @@ import ShortsIcon from "../components/ShortsIcon";
    Checkout needs a Google sign-in (the first one creates the
    account), then order-service prices the cart and sends the
    shopper to Stripe's hosted payment page.
-   Bundle discount, worldwide shipping and GST are worked out in
-   CartContext for display; the server recalculates them. */
+   Bundle discount and GST are worked out in CartContext for
+   display; the server recalculates them. */
 
 /* Turns order-service's 409 details into lines the shopper can act on. */
 function describeProblem(problem, items) {
@@ -100,28 +100,6 @@ export default function Cart() {
       <div className="cart-split">
         {/* ---------- LEFT: ITEMS ---------- */}
         <div>
-          <div className="panel" style={{ padding: "16px 18px", marginBottom: 22 }}>
-            {totals.awayFromFreeShipping > 0 ? (
-              <div style={{ fontSize: 13, marginBottom: 10 }}>
-                You're{" "}
-                <strong style={{ color: "var(--brand-red)" }}>
-                  {money(totals.awayFromFreeShipping)}
-                </strong>{" "}
-                away from free worldwide shipping
-              </div>
-            ) : (
-              <div style={{ fontSize: 13, marginBottom: 10, color: "var(--ok)", fontWeight: 500 }}>
-                Free worldwide shipping unlocked
-              </div>
-            )}
-            <div className="progress">
-              <div
-                className="progress__fill"
-                style={{ width: `${totals.shippingProgress}%` }}
-              />
-            </div>
-          </div>
-
           {items.map((item) => (
             <div key={item.key} className="cart-item">
               <div className="cart-thumb">
@@ -255,7 +233,7 @@ export default function Cart() {
               )}
               <div className="summary-row">
                 <span>Shipping (worldwide)</span>
-                <span>{totals.shipping === 0 ? "FREE" : money(totals.shipping)}</span>
+                <span>{money(totals.shipping)}</span>
               </div>
               <div className="summary-row">
                 <span>Tax (GST 5%)</span>

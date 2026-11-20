@@ -34,10 +34,10 @@ Nothing here is a picture — every one of these does something:
 - **Store** — browse products, filter by sport, pick a size, add to cart.
   Out-of-stock sizes are disabled and struck through. Sale prices show the old
   price crossed out. Products with no reviews hide the star rating.
-- **Cart** — change quantities, remove lines, watch the free-shipping bar fill,
-  and see the $30 bundle discount apply automatically once there are two items.
-  Totals (bundle, shipping, GST) recalculate live. Guest checkout only — the
-  client does not want customer accounts.
+- **Cart** — change quantities, remove lines, and see the $30 bundle discount
+  apply automatically once there are two items. Totals (bundle, shipping,
+  GST) recalculate live. Guest checkout only — the client does not want
+  customer accounts.
 - **Admin** — add a product and it appears on the store immediately. Edit one,
   delete one, save something as a draft (drafts stay off the storefront).
   Stock is tracked per size and drives the disabled size buttons on the store.

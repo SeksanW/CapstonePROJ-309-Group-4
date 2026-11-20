@@ -13,8 +13,28 @@ import ProductCard from "../components/ProductCard";
    out of the way. Photos are in public/images/natela/. */
 
 export default function Store() {
-  const { products, loading, error } = useProducts();
-  const [sportFilter, setSportFilter] = useState(null);
+  const { products } = useProducts();
+  const [pageContent, setPageContent] = useState({});
+
+  /* The hero and collection banners are edited separately, through the
+     admin's "Main page edits" screen (GET /page-content) — not tied to
+     any product, so a product's photo should never end up here. */
+  useEffect(() => {
+    let cancelled = false;
+    api("/page-content")
+      .then((data) => {
+        if (!cancelled) setPageContent(data ?? {});
+      })
+      .catch(() => {
+        /* Banners just fall back to the placeholder icon below. */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const hero = pageContent.hero ?? {};
+  const collection = pageContent.collection ?? {};
 
   /* The API only returns live products; the filter stays as a guard. */
   const live = useMemo(
@@ -22,17 +42,14 @@ export default function Store() {
     [products]
   );
 
-  const visible = useMemo(
-    () => (sportFilter ? live.filter((p) => p.sport === sportFilter) : live),
-    [live, sportFilter]
-  );
-
   const onSale = useMemo(
     () => live.filter((p) => p.comparePrice && p.comparePrice > p.price),
     [live]
   );
 
-  const countBySport = (name) => live.filter((p) => p.sport === name).length;
+  /* The featured product below the hero is the only spot that's
+     deliberately tied to a real product, not page content. */
+  const featured = live[0] ?? null;
 
   return (
     <>
@@ -115,21 +132,8 @@ export default function Store() {
           <div className="empty panel">
             <p style={{ fontWeight: 500 }}>Loading products…</p>
           </div>
-        ) : error ? (
-          <div className="empty panel">
-            <p style={{ fontWeight: 500, marginBottom: 6 }}>
-              Couldn't load products
-            </p>
-            <p style={{ fontSize: 13.5 }}>
-              Check your connection and{" "}
-              <button
-                className="btn btn--quiet"
-                style={{ marginLeft: 6 }}
-                onClick={() => window.location.reload()}
-              >
-                Try again
-              </button>
-            </p>
+          <div style={{ maxWidth: 320, margin: "0 auto" }}>
+            <ProductCard product={featured} />
           </div>
         ) : visible.length === 0 ? (
           <div className="empty panel">
@@ -145,14 +149,13 @@ export default function Store() {
               </button>
             </p>
           </div>
-        ) : (
-          <div className="grid grid--4">
-            {visible.map((p) => (
+          <div className="grid grid--3">
+            {live.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
           </div>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* ---------- CAMPAIGN BAND ---------- */}
       <section className="band">
