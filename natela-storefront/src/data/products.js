@@ -21,3 +21,17 @@ export const helpLinks = [
   { title: "Returns", sub: "30 days, unworn, tags attached" },
   { title: "FAQ", sub: "Care, fabric and order questions" },
 ];
+
+/* ---------------------------------------------------------
+   The campaign shots used across the store page. These are
+   page furniture, not products, so they stay on the frontend
+   rather than coming from product-service.
+
+   Files live in public/images/natela/.
+   --------------------------------------------------------- */
+export const lookbook = [
+  { src: "/images/natela/look-1.jpg", alt: "Two athletes in Natela Fit kit on stadium steps" },
+  { src: "/images/natela/look-2.jpg", alt: "Natela Fit shorts and crop tops, downtown Calgary" },
+  { src: "/images/natela/look-3.jpg", alt: "Pad work in Natela Fit shorts on the turf" },
+  { src: "/images/natela/look-4.jpg", alt: "Natela Fit hoodies and shorts against the city" },
+];
