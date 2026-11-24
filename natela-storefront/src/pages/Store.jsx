@@ -101,7 +101,7 @@ export default function Store() {
               marginBottom: 22,
             }}
           >
-            NEW — FLAME SERIES
+            Koi Fish Series
           </span>
           <h1 className="h1" style={{ marginBottom: 20 }}>
             Built for the
