@@ -16,8 +16,10 @@ export class ApiError extends Error {
   }
 }
 
-/* `token` is the shopper's Firebase ID token, for signed-in routes. */
-export async function api(path, { method = "GET", body, token } = {}) {
+/* `token` is the shopper's Firebase ID token, for signed-in routes.
+   `headers` is for anything else a call needs (e.g. the chat widget's
+   anonymous session id). */
+export async function api(path, { method = "GET", body, token, headers } = {}) {
   let res;
   try {
     res = await fetch(`${API_URL}${path}`, {
@@ -25,6 +27,7 @@ export async function api(path, { method = "GET", body, token } = {}) {
       headers: {
         ...(body && { "Content-Type": "application/json" }),
         ...(token && { Authorization: `Bearer ${token}` }),
+        ...headers,
       },
       body: body && JSON.stringify(body),
     });
