@@ -1,11 +1,13 @@
 import { Routes, Route, Outlet } from "react-router-dom";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import ChatWidget from "./components/ChatWidget";
 import Store from "./pages/Store";
 import Cart from "./pages/Cart";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
 
-/* Storefront layout: header and footer around every page. */
+/* Storefront layout: header and footer around every page, plus the
+   floating help/returns chat widget. */
 
 function StoreLayout() {
   return (
@@ -15,6 +17,7 @@ function StoreLayout() {
         <Outlet />
       </main>
       <Footer />
+      <ChatWidget />
     </div>
   );
 }
