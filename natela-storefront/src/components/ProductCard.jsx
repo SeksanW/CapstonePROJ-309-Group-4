@@ -8,12 +8,7 @@ import ShortsIcon from "./ShortsIcon";
    products are listed — this is the most repeated piece in the app.
 
    The client asked for size buttons that show stock per size, so
-   an out-of-stock size renders disabled and struck through.
-
-   Now that there's real photography the image does the work: it
-   fills a 3:4 frame, and on hover it cross-fades to a second shot
-   where one exists. Products with no photo still fall back to the
-   drawn ShortsIcon, so nothing breaks while the catalogue fills in. */
+   an out-of-stock size renders disabled and struck through. */
 
 export default function ProductCard({ product }) {
   const [selectedSize, setSelectedSize] = useState(null);
@@ -23,7 +18,6 @@ export default function ProductCard({ product }) {
   const onSale = product.comparePrice && product.comparePrice > product.price;
   const totalStock = Object.values(product.stock).reduce((a, b) => a + b, 0);
   const soldOut = totalStock === 0;
-  const altShot = product.gallery?.[0];
 
   function handleAdd() {
     if (!selectedSize) return;
@@ -42,30 +36,13 @@ export default function ProductCard({ product }) {
   return (
     <div className="card">
       <div className="card__media">
-        {product.image ? (
-          <>
-            <img
-              className="card__img"
-              src={product.image}
-              alt={product.name}
-              loading="lazy"
-            />
-            {altShot && (
-              <img
-                className="card__img card__img--alt"
-                src={altShot}
-                alt=""
-                aria-hidden="true"
-                loading="lazy"
-              />
-            )}
-          </>
-        ) : (
-          <div className="card__ph">
+        <div className="card__ph">
+          {product.image ? (
+            <img src={product.image} alt={product.name} />
+          ) : (
             <ShortsIcon />
-          </div>
-        )}
-
+          )}
+        </div>
         {tag && (
           <span className="card__tag" style={{ background: tagBg }}>
             {tag}

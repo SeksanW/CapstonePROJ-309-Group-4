@@ -1,20 +1,39 @@
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { useProducts } from "../context/ProductsContext";
 import { money } from "../context/CartContext";
-import { sports, helpLinks, lookbook } from "../data/products";
+import { helpLinks } from "../data/products";
+import { api } from "../lib/api";
 import ProductCard from "../components/ProductCard";
+import ShortsIcon from "../components/ShortsIcon";
 
 /* SCRUM-8 — Store page.
-   The main page: hero, shop by sport, product grid, campaign band,
-   sale row, collection story, lookbook, bundle deal, help links.
-
-   Rebuilt around the client's photography. The pictures carry the
-   page now, so the drawn placeholders are gone and the chrome gets
-   out of the way. Photos are in public/images/natela/. */
+   The main page: hero, product grid, sale row,
+   collection story, bundle deal, help links. */
 
 export default function Store() {
-  const { products, loading, error } = useProducts();
-  const [sportFilter, setSportFilter] = useState(null);
+  const { products } = useProducts();
+  const [pageContent, setPageContent] = useState({});
+
+  /* The hero and collection banners are edited separately, through the
+     admin's "Main page edits" screen (GET /page-content) — not tied to
+     any product, so a product's photo should never end up here. */
+  useEffect(() => {
+    let cancelled = false;
+    api("/page-content")
+      .then((data) => {
+        if (!cancelled) setPageContent(data ?? {});
+      })
+      .catch(() => {
+        /* Banners just fall back to the placeholder icon below. */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const hero = pageContent.hero ?? {};
+  const collection = pageContent.collection ?? {};
 
   /* The API only returns live products; the filter stays as a guard. */
   const live = useMemo(
@@ -22,170 +41,142 @@ export default function Store() {
     [products]
   );
 
-  const visible = useMemo(
-    () => (sportFilter ? live.filter((p) => p.sport === sportFilter) : live),
-    [live, sportFilter]
-  );
-
   const onSale = useMemo(
     () => live.filter((p) => p.comparePrice && p.comparePrice > p.price),
     [live]
   );
 
-  const countBySport = (name) => live.filter((p) => p.sport === name).length;
+  /* The featured product below the hero is the only spot that's
+     deliberately tied to a real product, not page content. */
+  const featured = live[0] ?? null;
 
   return (
     <>
       {/* ---------- HERO ---------- */}
-      <section className="hero">
-        <div className="hero__copy">
-          <span className="hero__eyebrow">THE KOI COLLECTION</span>
-          <h1 className="hero__title">
-            Built for
+      <section
+        style={{
+          position: "relative",
+          minHeight: 520,
+          background: "var(--surface-grey)",
+          display: "flex",
+          alignItems: "center",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            paddingRight: hero.image ? 0 : 80,
+          }}
+        >
+          {hero.image ? (
+            <img
+              src={hero.image}
+              alt=""
+              style={{ width: "48%", height: "100%", objectFit: "cover" }}
+            />
+          ) : (
+            <ShortsIcon size={360} color="#DCDCD7" stroke={1.1} />
+          )}
+        </div>
+
+        <div
+          className="page"
+          style={{ position: "relative", maxWidth: 600, paddingBlock: 48 }}
+        >
+          <span
+            style={{
+              display: "inline-block",
+              background: "var(--brand-gradient)",
+              color: "#fff",
+              fontSize: 11,
+              fontWeight: 600,
+              letterSpacing: "0.1em",
+              padding: "6px 14px",
+              borderRadius: "var(--radius)",
+              marginBottom: 22,
+            }}
+          >
+            NEW — FLAME SERIES
+          </span>
+          <h1 className="h1" style={{ marginBottom: 20 }}>
+            Built for the
             <br />
-            the ring.
+            ring. Made
+            <br />
+            to last.
           </h1>
-          <p className="hero__sub">
-            Hand-painted koi on satin-finish white. Made in Calgary, shipped
-            worldwide, built to take a beating.
+          <p
+            style={{
+              fontSize: 16,
+              lineHeight: 1.6,
+              color: "var(--ink-soft)",
+              maxWidth: 400,
+              marginBottom: 32,
+            }}
+          >
+            Hand-finished Muay Thai shorts with a four-way stretch panel and a
+            waistband that stays put through every round.
           </p>
-          <div className="hero__actions">
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             <a href="#new" className="btn btn--grad">
               Shop the collection
             </a>
-            <a href="#lookbook" className="btn btn--outline">
-              See the lookbook
+            <a href="#help" className="btn btn--outline">
+              Find your size
             </a>
           </div>
         </div>
-        <div className="hero__media">
-          <img
-            src="/images/natela/hero.jpg"
-            alt="Two athletes in Natela Fit koi shorts on an outdoor court"
-            fetchpriority="high"
-          />
-        </div>
       </section>
 
-      {/* ---------- SHOP BY SPORT ---------- */}
-      <section id="sports" className="page" style={{ paddingTop: 72 }}>
-        <div className="row-between" style={{ marginBottom: 26 }}>
-          <h2 className="h2">Shop by sport</h2>
-          {sportFilter && (
-            <button className="btn btn--quiet" onClick={() => setSportFilter(null)}>
-              Clear filter
-            </button>
-          )}
-        </div>
-
-        <div className="chips">
-          <button
-            className={`chip${sportFilter === null ? " chip--on" : ""}`}
-            onClick={() => setSportFilter(null)}
-          >
-            All
-          </button>
-          {sports.map((s) => (
-            <button
-              key={s.slug}
-              className={`chip${sportFilter === s.name ? " chip--on" : ""}`}
-              onClick={() => setSportFilter(sportFilter === s.name ? null : s.name)}
-            >
-              {s.name}
-              <span className="chip__count">{countBySport(s.name)}</span>
-            </button>
-          ))}
-        </div>
-      </section>
-
-      {/* ---------- PRODUCT GRID ---------- */}
-      <section id="new" className="page" style={{ paddingTop: 40, paddingBottom: 72 }}>
-        <div className="row-between" style={{ marginBottom: 26 }}>
-          <h2 className="h2">
-            {sportFilter ? `${sportFilter}` : "The collection"}
-          </h2>
-          {!loading && !error && (
-            <span className="muted">
-              {visible.length} {visible.length === 1 ? "piece" : "pieces"}
-            </span>
-          )}
-        </div>
-
-        {loading ? (
-          <div className="empty panel">
-            <p style={{ fontWeight: 500 }}>Loading products…</p>
+      {/* ---------- FEATURED PRODUCT ---------- */}
+      {featured && (
+        <section className="page" style={{ paddingTop: 64 }}>
+          <div style={{ textAlign: "center", marginBottom: 28 }}>
+            <span className="eyebrow">FLAME SERIES</span>
+            <h2 className="h2" style={{ marginTop: 8 }}>
+              Pick your size
+            </h2>
           </div>
-        ) : error ? (
-          <div className="empty panel">
-            <p style={{ fontWeight: 500, marginBottom: 6 }}>
-              Couldn't load products
-            </p>
-            <p style={{ fontSize: 13.5 }}>
-              Check your connection and{" "}
-              <button
-                className="btn btn--quiet"
-                style={{ marginLeft: 6 }}
-                onClick={() => window.location.reload()}
-              >
-                Try again
-              </button>
-            </p>
+          <div style={{ maxWidth: 320, margin: "0 auto" }}>
+            <ProductCard product={featured} />
           </div>
-        ) : visible.length === 0 ? (
-          <div className="empty panel">
-            <p style={{ fontWeight: 500, marginBottom: 6 }}>Nothing here yet</p>
-            <p style={{ fontSize: 13.5 }}>
-              No products in this category.{" "}
-              <button
-                className="btn btn--quiet"
-                style={{ marginLeft: 6 }}
-                onClick={() => setSportFilter(null)}
-              >
-                Show everything
-              </button>
-            </p>
+        </section>
+      )}
+
+      {/* ---------- ALL PRODUCTS ---------- */}
+      {live.length > 0 && (
+        <section id="new" className="page" style={{ paddingTop: 64 }}>
+          <div style={{ textAlign: "center", marginBottom: 28 }}>
+            <span className="eyebrow">SHOP ALL</span>
+            <h2 className="h2" style={{ marginTop: 8 }}>
+              New arrivals
+            </h2>
           </div>
-        ) : (
-          <div className="grid grid--4">
-            {visible.map((p) => (
+          <div className="grid grid--3">
+            {live.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
           </div>
-        )}
-      </section>
-
-      {/* ---------- CAMPAIGN BAND ---------- */}
-      <section className="band">
-        <img
-          src="/images/natela/action-wide.jpg"
-          alt="Pad work in Natela Fit kit, downtown Calgary"
-          loading="lazy"
-        />
-        <div className="band__overlay">
-          <p className="band__quote">
-            Light, brightness
-            <br />
-            and hope.
-          </p>
-          <p className="band__attr">Natela — from the Aramaic</p>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ---------- ON SALE ---------- */}
       {onSale.length > 0 && (
         <section
           id="sale"
-          style={{ background: "var(--surface-soft)", paddingBlock: 56 }}
+          style={{
+            marginTop: 72,
+            background: "var(--surface-soft)",
+            paddingBlock: 56,
+          }}
         >
           <div className="page">
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                marginBottom: 8,
-              }}
-            >
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
               <h2 className="h2">On sale</h2>
               <span
                 style={{
@@ -215,45 +206,74 @@ export default function Store() {
       )}
 
       {/* ---------- COLLECTION STORY ---------- */}
-      <section id="collection" className="page section">
-        <div className="story">
-          <div className="story__media">
-            <img
-              src="/images/natela/story-wide.jpg"
-              alt="Natela Fit kit against a graffiti wall in Calgary"
-              loading="lazy"
-            />
+      <section id="collection" className="page" style={{ paddingBlock: 76 }}>
+        <div
+          className="panel"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1.1fr 1fr",
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              background: "var(--surface-grey)",
+              minHeight: 340,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {collection.image ? (
+              <img
+                src={collection.image}
+                alt=""
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+              />
+            ) : (
+              <ShortsIcon size={150} stroke={1.3} />
+            )}
           </div>
-          <div className="story__copy">
-            <span className="eyebrow">THE COLLECTION</span>
-            <h2 className="story__title">Shot where we train.</h2>
-            <p className="story__text">
-              Natela takes its name from the Aramaic word for light. Every piece
-              in the koi series was photographed on the rooftops, courts and turf
-              we actually use — no studio, no stand-ins. The print is
-              hand-painted, so no two pairs sit exactly the same.
+          <div
+            style={{
+              padding: "48px 44px",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+            }}
+          >
+            <span className="eyebrow" style={{ marginBottom: 16 }}>
+              THE COLLECTION
+            </span>
+            <h2
+              style={{
+                fontSize: "1.85rem",
+                fontWeight: 700,
+                letterSpacing: "-0.025em",
+                lineHeight: 1.12,
+                marginBottom: 16,
+              }}
+            >
+              Light, brightness
+              <br />
+              and hope.
+            </h2>
+            <p
+              style={{
+                fontSize: 14.5,
+                lineHeight: 1.68,
+                color: "var(--ink-soft)",
+                marginBottom: 26,
+              }}
+            >
+              Natela takes its name from the Aramaic word for light. Every pair
+              in the Flame series carries the gradient — a reminder that the
+              work happens long before the fight.
             </p>
-            <a href="#new" className="btn btn--dark">
+            <a href="#new" className="btn btn--dark" style={{ alignSelf: "flex-start" }}>
               Explore the series
             </a>
           </div>
-        </div>
-      </section>
-
-      {/* ---------- LOOKBOOK ---------- */}
-      <section id="lookbook" className="page section">
-        <div className="row-between" style={{ marginBottom: 26 }}>
-          <h2 className="h2">Lookbook</h2>
-          <a href="#new" className="link-underline">
-            Shop the looks
-          </a>
-        </div>
-        <div className="lookbook">
-          {lookbook.map((shot) => (
-            <figure className="look" key={shot.src}>
-              <img src={shot.src} alt={shot.alt} loading="lazy" />
-            </figure>
-          ))}
         </div>
       </section>
 
@@ -292,7 +312,7 @@ export default function Store() {
                 marginBottom: 6,
               }}
             >
-              Any two pieces — save {money(30)}
+              Any two pairs — save {money(30)}
             </h3>
             <p style={{ fontSize: 14, color: "rgba(255,255,255,0.9)" }}>
               Mix any colours or sizes. Applied automatically in your cart.
@@ -303,7 +323,7 @@ export default function Store() {
             className="btn"
             style={{ background: "#fff", color: "var(--ink)", whiteSpace: "nowrap" }}
           >
-            Build your kit
+            Build your bundle
           </a>
         </div>
       </section>
@@ -321,9 +341,7 @@ export default function Store() {
               <div style={{ fontSize: 14.5, fontWeight: 600, marginBottom: 5 }}>
                 {h.title}
               </div>
-              <div
-                style={{ fontSize: 12.5, color: "var(--ink-muted)", lineHeight: 1.5 }}
-              >
+              <div style={{ fontSize: 12.5, color: "var(--ink-muted)", lineHeight: 1.5 }}>
                 {h.sub}
               </div>
             </a>
