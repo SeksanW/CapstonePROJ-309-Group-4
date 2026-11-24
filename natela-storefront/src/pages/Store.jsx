@@ -137,7 +137,7 @@ export default function Store() {
       {featured && (
         <section className="page" style={{ paddingTop: 64 }}>
           <div style={{ textAlign: "center", marginBottom: 28 }}>
-            <span className="eyebrow">FLAME SERIES</span>
+            <span className="eyebrow">Koi Fish Series</span>
             <h2 className="h2" style={{ marginTop: 8 }}>
               Pick your size
             </h2>
