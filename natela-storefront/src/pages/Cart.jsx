@@ -7,11 +7,13 @@ import { api } from "../lib/api";
 import ShortsIcon from "../components/ShortsIcon";
 
 /* SCRUM-5 — Cart.
-   Checkout needs a Google sign-in (the first one creates the
-   account), then order-service prices the cart and sends the
-   shopper to Stripe's hosted payment page.
+   Checkout works signed in (Google — the first sign-in creates the
+   account) or as a guest with just an email. Either way, order-service
+   prices the cart and sends the shopper to Stripe's hosted payment page.
    Bundle discount and GST are worked out in CartContext for
    display; the server recalculates them. */
+
+const EMAIL_RE = /^\S+@\S+\.\S+$/;
 
 /* Turns order-service's 409 details into lines the shopper can act on. */
 function describeProblem(problem, items) {
@@ -31,6 +33,8 @@ export default function Cart() {
   const { user, ready, signIn } = useAuth();
   const [checkingOut, setCheckingOut] = useState(false);
   const [checkoutError, setCheckoutError] = useState(null);
+  const [guestEmail, setGuestEmail] = useState("");
+  const guestEmailValid = EMAIL_RE.test(guestEmail.trim());
 
   /* The problems listed are about the cart as it was — clear them once
      the shopper changes it. */
@@ -40,18 +44,27 @@ export default function Cart() {
     setCheckoutError(null);
     setCheckingOut(true);
     try {
-      /* signIn() runs before any await so the popup isn't blocked. */
-      const shopper = user ?? (await signIn());
-      const token = await shopper.getIdToken();
+      const token = user ? await user.getIdToken() : undefined;
       const { url } = await api("/orders/checkout", {
         method: "POST",
         token,
-        body: { items: items.map(({ productId, size, qty }) => ({ productId, size, qty })) },
+        body: {
+          items: items.map(({ productId, size, qty }) => ({ productId, size, qty })),
+          ...(!user && { guestEmail: guestEmail.trim() }),
+        },
       });
       window.location.assign(url); // Stripe's payment page
     } catch (err) {
-      if (!isSignInCancelled(err)) setCheckoutError(err);
+      setCheckoutError(err);
       setCheckingOut(false);
+    }
+  }
+
+  async function signInInstead() {
+    try {
+      await signIn();
+    } catch (err) {
+      if (!isSignInCancelled(err)) setCheckoutError(err);
     }
   }
 
@@ -280,14 +293,34 @@ export default function Cart() {
               </div>
             )}
 
+            {!user && (
+              <div style={{ marginBottom: 14 }}>
+                <label
+                  htmlFor="guestEmail"
+                  style={{ display: "block", fontSize: 12.5, fontWeight: 500, marginBottom: 6 }}
+                >
+                  Email for your receipt and order updates
+                </label>
+                <input
+                  id="guestEmail"
+                  type="email"
+                  className="fld"
+                  placeholder="you@example.com"
+                  value={guestEmail}
+                  onChange={(e) => setGuestEmail(e.target.value)}
+                  autoComplete="email"
+                />
+              </div>
+            )}
+
             <button
               className="btn btn--grad btn--block btn--lg"
               onClick={proceedToCheckout}
               /* Until Firebase has restored the session, `user` is null even
-                 for a signed-in shopper, and a click would open the popup. */
-              disabled={checkingOut || !ready}
+                 for a signed-in shopper, and it'd wrongly ask for an email. */
+              disabled={checkingOut || !ready || (!user && !guestEmailValid)}
             >
-              {checkingOut ? "Starting checkout…" : "Proceed to checkout"}
+              {checkingOut ? "Starting checkout…" : user ? "Proceed to checkout" : "Checkout as guest"}
             </button>
             <div
               style={{
@@ -297,9 +330,29 @@ export default function Cart() {
                 margin: "10px 0 0",
               }}
             >
-              {user
-                ? `Signed in as ${user.email}`
-                : "You'll sign in with Google — first time? That creates your account."}
+              {user ? (
+                `Signed in as ${user.email}`
+              ) : (
+                <>
+                  Have an account?{" "}
+                  <button
+                    type="button"
+                    onClick={signInInstead}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      padding: 0,
+                      font: "inherit",
+                      color: "inherit",
+                      textDecoration: "underline",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Sign in with Google
+                  </button>{" "}
+                  instead — first time? That creates one.
+                </>
+              )}
             </div>
 
             <div

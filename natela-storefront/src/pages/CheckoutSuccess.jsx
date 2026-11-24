@@ -18,12 +18,14 @@ export default function CheckoutSuccess() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!sessionId || !ready || !user) return;
+    if (!sessionId || !ready) return;
     let cancelled = false;
     setError(null);
-    user
-      .getIdToken()
-      .then((token) => api(`/orders/checkout/${encodeURIComponent(sessionId)}`, { token }))
+    /* Signed in: fetch with the shopper's token. Guest: no token needed —
+       the session id in the URL is proof enough, same as Stripe's own
+       success page. */
+    (user ? user.getIdToken() : Promise.resolve(null))
+      .then((token) => api(`/orders/checkout/${encodeURIComponent(sessionId)}`, token ? { token } : {}))
       .then((result) => {
         if (cancelled) return;
         setOrder(result);
@@ -42,25 +44,25 @@ export default function CheckoutSuccess() {
   let body;
   if (!sessionId) {
     body = <Message title="No order to show" text="This page is opened from the payment page after checkout." />;
-  } else if (!ready || (user && !order && !error)) {
+  } else if (!ready || (!order && !error)) {
     body = <Message title="Confirming your payment…" />;
-  } else if (!user) {
+  } else if (error) {
     body = (
       <Message
-        title="Sign in to see your order"
-        text={error || "Use the same Google account you checked out with."}
+        title="We couldn't confirm this order"
+        text={user ? error : "If you checked out signed in, sign in with that account to see it."}
         action={
-          <button
-            className="btn btn--grad"
-            onClick={() => signIn().catch((err) => !isSignInCancelled(err) && setError(err.message))}
-          >
-            Continue with Google
-          </button>
+          user ? undefined : (
+            <button
+              className="btn btn--grad"
+              onClick={() => signIn().catch((err) => !isSignInCancelled(err) && setError(err.message))}
+            >
+              Continue with Google
+            </button>
+          )
         }
       />
     );
-  } else if (error) {
-    body = <Message title="We couldn't confirm this order" text={error} />;
   } else if (order.status !== "paid") {
     body = (
       <Message
