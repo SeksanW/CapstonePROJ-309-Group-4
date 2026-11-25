@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useProducts } from "../context/ProductsContext";
+import { usePageContent } from "../context/PageContentContext";
 import { money } from "../context/CartContext";
 import { helpLinks } from "../data/products";
-import { api } from "../lib/api";
 import ProductCard from "../components/ProductCard";
+import ContentModal from "../components/ContentModal";
 import ShortsIcon from "../components/ShortsIcon";
 
 /* SCRUM-8 — Store page.
@@ -13,27 +14,15 @@ import ShortsIcon from "../components/ShortsIcon";
 
 export default function Store() {
   const { products } = useProducts();
-  const [pageContent, setPageContent] = useState({});
+  const { content } = usePageContent();
+  const [storyOpen, setStoryOpen] = useState(false);
 
-  /* The hero and collection banners are edited separately, through the
-     admin's "Main page edits" screen (GET /page-content) — not tied to
-     any product, so a product's photo should never end up here. */
-  useEffect(() => {
-    let cancelled = false;
-    api("/page-content")
-      .then((data) => {
-        if (!cancelled) setPageContent(data ?? {});
-      })
-      .catch(() => {
-        /* Banners just fall back to the placeholder icon below. */
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const hero = pageContent.hero ?? {};
-  const collection = pageContent.collection ?? {};
+  /* The hero, collection and story sections are all edited through the
+     admin's "Main page edits" screen (GET /page-content) — not tied to any
+     product, so a product's photo should never end up here. */
+  const hero = content.hero ?? {};
+  const collection = content.collection ?? {};
+  const story = content.story ?? {};
 
   /* The API only returns live products; the filter stays as a guard. */
   const live = useMemo(
@@ -122,9 +111,9 @@ export default function Store() {
             <a href={hero.primaryLink || "#new"} className="btn btn--grad">
               {hero.primaryLabel || "Shop the collection"}
             </a>
-            <a href={hero.secondaryLink || "#help"} className="btn btn--outline">
-              {hero.secondaryLabel || "Find your size"}
-            </a>
+            <button type="button" className="btn btn--outline" onClick={() => setStoryOpen(true)}>
+              {hero.secondaryLabel || "Our story"}
+            </button>
           </div>
         </div>
       </section>
@@ -345,6 +334,16 @@ export default function Store() {
           ))}
         </div>
       </section>
+
+      {storyOpen && (
+        <ContentModal
+          eyebrow="OUR STORY"
+          heading={story.heading || "Our story"}
+          image={story.image || null}
+          body={story.body || ""}
+          onClose={() => setStoryOpen(false)}
+        />
+      )}
     </>
   );
 }

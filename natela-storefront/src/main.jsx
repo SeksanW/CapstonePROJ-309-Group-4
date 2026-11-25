@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import { ProductsProvider } from "./context/ProductsContext";
+import { PageContentProvider } from "./context/PageContentContext";
 import { CartProvider } from "./context/CartContext";
 import { AuthProvider } from "./context/AuthContext";
 import "./styles/global.css";
@@ -12,9 +13,11 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <BrowserRouter>
       <AuthProvider>
         <ProductsProvider>
-          <CartProvider>
-            <App />
-          </CartProvider>
+          <PageContentProvider>
+            <CartProvider>
+              <App />
+            </CartProvider>
+          </PageContentProvider>
         </ProductsProvider>
       </AuthProvider>
     </BrowserRouter>

@@ -2,12 +2,15 @@ import { Routes, Route, Outlet } from "react-router-dom";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import ChatWidget from "./components/ChatWidget";
+import IntroGate from "./components/IntroGate";
 import Store from "./pages/Store";
 import Cart from "./pages/Cart";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
 
 /* Storefront layout: header and footer around every page, plus the
-   floating help/returns chat widget. */
+   floating help/returns chat widget. IntroGate covers all of it (it's a
+   fixed full-screen overlay) on a first-ever visit to "/", then gets out
+   of the way for good. */
 
 function StoreLayout() {
   return (
@@ -18,6 +21,7 @@ function StoreLayout() {
       </main>
       <Footer />
       <ChatWidget />
+      <IntroGate />
     </div>
   );
 }
