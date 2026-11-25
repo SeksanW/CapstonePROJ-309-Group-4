@@ -2,8 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useProducts } from "../context/ProductsContext";
 import { usePageContent } from "../context/PageContentContext";
-import ContentModal from "./ContentModal";
 import StoryModal from "./StoryModal";
+import DesignModal from "./DesignModal";
 import { blobPath, easeInOutCubic, frameRadii, makeBlobAngles } from "./introBlob";
 
 /* ---------------------------------------------------------
@@ -39,7 +39,7 @@ function pillPixelSize() {
 export default function IntroGate() {
   const location = useLocation();
   const { products, loading: productsLoading } = useProducts();
-  const { content, loading: contentLoading } = usePageContent();
+  const { loading: contentLoading } = usePageContent();
 
   const [active] = useState(() => location.pathname === "/");
   const [phase, setPhase] = useState("loading"); // loading | flowing | gate | exiting | done
@@ -109,9 +109,11 @@ export default function IntroGate() {
     return () => cancelAnimationFrame(raf);
   }, [active, phase, angles, panelRw, panelRh]);
 
-  /* Any scroll, touch or "forward" key moves past the gate screen. */
+  /* Any scroll, touch or "forward" key moves past the gate screen — but
+     not while "Our story"/"Design" is open on top of it, or scrolling to
+     read that popup would also dismiss the gate underneath it. */
   useEffect(() => {
-    if (!active || phase !== "gate") return;
+    if (!active || phase !== "gate" || openModal) return;
     function advance() {
       setPhase("exiting");
     }
@@ -129,7 +131,7 @@ export default function IntroGate() {
       window.removeEventListener("touchmove", advance);
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [active, phase]);
+  }, [active, phase, openModal]);
 
   /* Fades out, then unmounts for good. */
   useEffect(() => {
@@ -154,8 +156,15 @@ export default function IntroGate() {
 
   if (!active || phase === "done") return null;
 
-  const design = content.design ?? {};
   const settled = phase === "gate" || phase === "exiting";
+
+  /* "Store" in a popup opened from the gate should actually land the
+     visitor on the store, not just close the popup back onto the gate
+     they'd still have to scroll past. */
+  function goToStore() {
+    setOpenModal(null);
+    setPhase("exiting");
+  }
 
   return (
     <>
@@ -215,15 +224,11 @@ export default function IntroGate() {
         )}
       </div>
 
-      {openModal === "story" && <StoryModal onClose={() => setOpenModal(null)} />}
+      {openModal === "story" && (
+        <StoryModal onClose={() => setOpenModal(null)} onStore={goToStore} />
+      )}
       {openModal === "design" && (
-        <ContentModal
-          eyebrow="DESIGN & PROCESS"
-          heading={design.heading || "Design & process"}
-          image={design.image || null}
-          body={design.body || ""}
-          onClose={() => setOpenModal(null)}
-        />
+        <DesignModal onClose={() => setOpenModal(null)} onStore={goToStore} />
       )}
     </>
   );

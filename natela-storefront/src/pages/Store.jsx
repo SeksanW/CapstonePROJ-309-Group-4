@@ -6,6 +6,7 @@ import { money } from "../context/CartContext";
 import { helpLinks } from "../data/products";
 import ProductCard from "../components/ProductCard";
 import StoryModal from "../components/StoryModal";
+import DesignModal from "../components/DesignModal";
 import ShortsIcon from "../components/ShortsIcon";
 
 /* SCRUM-8 — Store page.
@@ -16,6 +17,7 @@ export default function Store() {
   const { products } = useProducts();
   const { content } = usePageContent();
   const [storyOpen, setStoryOpen] = useState(false);
+  const [designOpen, setDesignOpen] = useState(false);
 
   /* The hero and collection sections are edited through the admin's "Main
      page edits" screen (GET /page-content) — not tied to any product, so
@@ -107,9 +109,9 @@ export default function Store() {
               "Hand-finished Muay Thai shorts with a four-way stretch panel and a waistband that stays put through every round."}
           </p>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-            <a href={hero.primaryLink || "#new"} className="btn btn--grad">
-              {hero.primaryLabel || "Shop the collection"}
-            </a>
+            <button type="button" className="btn btn--grad" onClick={() => setDesignOpen(true)}>
+              {hero.primaryLabel || "Design"}
+            </button>
             <button type="button" className="btn btn--outline" onClick={() => setStoryOpen(true)}>
               {hero.secondaryLabel || "Our story"}
             </button>
@@ -335,6 +337,7 @@ export default function Store() {
       </section>
 
       {storyOpen && <StoryModal onClose={() => setStoryOpen(false)} />}
+      {designOpen && <DesignModal onClose={() => setDesignOpen(false)} />}
     </>
   );
 }

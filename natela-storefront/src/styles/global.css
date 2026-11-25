@@ -958,7 +958,8 @@ tbody tr:hover {
   }
 }
 
-/* ---------- story card (the "Our story" popup, a card slideshow) ---------- */
+/* ---------- story panel (the "Our story" popup — a continuous,
+   freely-scrollable feed of bubbles, not a slideshow) ---------- */
 .story-overlay {
   position: fixed;
   inset: 0;
@@ -969,13 +970,21 @@ tbody tr:hover {
   justify-content: center;
   padding: 24px;
 }
-/* The koi fabric print lives on the dimmed backdrop, outside the card —
-   not inside it. */
+/* The koi fabric print lives on the dimmed backdrop, outside the panel —
+   not inside it. Sized and centered to match the panel itself (not the
+   full viewport height), filling the strip completely (`cover`, so there's
+   no empty backdrop showing through inside the strip itself) and widened
+   to nearly touch the panel's edge — the only gap is the couple of px
+   between the koi and the panel, not at the outer viewport edge. The
+   source image (koi-fabric.jpg) is pre-cropped so the design's own centre
+   sits at the image's centre, matching this strip's ~0.56 aspect ratio, so
+   `cover` only has to trim the edges, not the design itself. */
 .story-overlay__koi {
   position: fixed;
-  top: 0;
-  bottom: 0;
-  width: clamp(120px, 16vw, 260px);
+  top: 50%;
+  height: min(720px, 86vh);
+  width: clamp(90px, calc((100vw - min(720px, 94vw)) / 2 - 2px), 420px);
+  transform: translateY(-50%);
   background-size: cover;
   background-position: center;
 }
@@ -984,82 +993,69 @@ tbody tr:hover {
 }
 .story-overlay__koi--right {
   right: 0;
-  transform: scaleX(-1);
+  transform: translateY(-50%) scaleX(-1);
 }
-.story-card {
+.story-panel {
   position: relative;
   z-index: 1;
-  width: min(900px, 94vw);
-  height: min(560px, 80vh);
+  width: min(720px, 94vw);
+  height: min(720px, 86vh);
+  background: var(--surface-grey);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.story-panel__scroll {
+  height: 100%;
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* old Edge */
+}
+.story-panel__scroll::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+.story-panel__content {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 64px 32px 72px;
+}
+
+/* Each "stack" is its own floating bubble — distinct from the panel's
+   own background — that fills in (heading, then image/text) and never
+   empties back out once revealed. */
+.story-bubble {
   background: var(--surface);
   border-radius: var(--radius-lg);
-  padding: 56px 64px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  opacity: 1;
-  transition: opacity 0.32s ease;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+  padding: 36px 36px 40px;
 }
-.story-card--fading {
-  opacity: 0;
-}
-.story-card--center {
-  align-items: center;
+.story-bubble__heading {
+  font-size: clamp(1.25rem, 2.6vw, 1.6rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
   text-align: center;
-  gap: 24px;
 }
-.story-card__content {
+.story-bubble__body {
+  margin-top: 26px;
+}
+/* Bubble 1's single image reads better beside the text than stacked
+   above it. */
+.story-bubble__body--side {
   display: flex;
-  gap: 40px;
-  height: 100%;
-  min-height: 0;
+  align-items: center;
+  gap: 28px;
 }
-.story-card__content > * {
-  flex: 1 1 0;
-  min-width: 0;
-  min-height: 0;
+.story-bubble__body--side .story-stage__images {
+  flex: 0 0 42%;
+  margin-bottom: 0;
 }
-.story-card__content .story-stage__body {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+.story-bubble__body--side .story-stage__images img {
+  height: 190px;
 }
-.story-card__media {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  height: 100%;
-}
-.story-card__media img {
+.story-bubble__body--side .story-stage__body {
   flex: 1;
-  min-height: 0;
-  width: 100%;
-  object-fit: cover;
-  border-radius: var(--radius-lg);
-  display: block;
-}
-.story-card__dots {
-  position: absolute;
-  bottom: 18px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 8px;
-}
-.story-card__dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--line);
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  transition: background 0.18s ease, width 0.18s ease;
-}
-.story-card__dot--active {
-  background: var(--brand-red);
-  width: 20px;
-  border-radius: 4px;
+  min-width: 0;
 }
 
 .story-reveal {
@@ -1071,32 +1067,78 @@ tbody tr:hover {
   opacity: 1;
   transform: translateY(0);
 }
-.story-stage__heading--hero {
-  font-size: clamp(1.4rem, 3.2vw, 2.1rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.25;
-  max-width: 480px;
-}
 .story-stage__body {
   font-size: 15px;
   line-height: 1.75;
   color: var(--ink-soft);
 }
+.story-stage__images {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+.story-stage__images--1 {
+  grid-template-columns: 1fr;
+}
+.story-stage__images--2 {
+  grid-template-columns: 1fr 1fr;
+}
+.story-stage__images--3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+.story-stage__images img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: var(--radius-lg);
+  display: block;
+}
+.story-stage__cta {
+  display: block;
+  margin: 24px auto 0;
+}
+.story-store-link {
+  display: block;
+  margin: 14px auto 0;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.story-store-link:hover {
+  color: var(--brand-red);
+}
 @media (max-width: 760px) {
   .story-overlay__koi {
     display: none;
   }
-  .story-card {
-    padding: 44px 26px;
-    height: min(620px, 86vh);
+  .story-panel {
+    height: min(720px, 90vh);
   }
-  .story-card__content {
+  .story-panel__content {
+    padding: 48px 20px 56px;
+  }
+  .story-bubble {
+    padding: 26px 22px 30px;
+  }
+  .story-stage__images--2,
+  .story-stage__images--3 {
+    grid-template-columns: 1fr;
+  }
+  .story-stage__images img {
+    height: 170px;
+  }
+  .story-bubble__body--side {
     flex-direction: column;
-    gap: 20px;
+    align-items: stretch;
   }
-  .story-card__media {
-    flex-direction: row;
-    height: 150px;
+  .story-bubble__body--side .story-stage__images {
+    flex: none;
   }
 }
