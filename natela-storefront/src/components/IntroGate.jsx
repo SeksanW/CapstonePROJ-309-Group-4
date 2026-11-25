@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { useProducts } from "../context/ProductsContext";
 import { usePageContent } from "../context/PageContentContext";
 import ContentModal from "./ContentModal";
+import StoryModal from "./StoryModal";
 import { blobPath, easeInOutCubic, frameRadii, makeBlobAngles } from "./introBlob";
 
 /* ---------------------------------------------------------
@@ -153,7 +154,6 @@ export default function IntroGate() {
 
   if (!active || phase === "done") return null;
 
-  const story = content.story ?? {};
   const design = content.design ?? {};
   const settled = phase === "gate" || phase === "exiting";
 
@@ -215,15 +215,7 @@ export default function IntroGate() {
         )}
       </div>
 
-      {openModal === "story" && (
-        <ContentModal
-          eyebrow="OUR STORY"
-          heading={story.heading || "Our story"}
-          image={story.image || null}
-          body={story.body || ""}
-          onClose={() => setOpenModal(null)}
-        />
-      )}
+      {openModal === "story" && <StoryModal onClose={() => setOpenModal(null)} />}
       {openModal === "design" && (
         <ContentModal
           eyebrow="DESIGN & PROCESS"

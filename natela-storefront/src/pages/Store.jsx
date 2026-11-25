@@ -5,7 +5,7 @@ import { usePageContent } from "../context/PageContentContext";
 import { money } from "../context/CartContext";
 import { helpLinks } from "../data/products";
 import ProductCard from "../components/ProductCard";
-import ContentModal from "../components/ContentModal";
+import StoryModal from "../components/StoryModal";
 import ShortsIcon from "../components/ShortsIcon";
 
 /* SCRUM-8 — Store page.
@@ -17,12 +17,11 @@ export default function Store() {
   const { content } = usePageContent();
   const [storyOpen, setStoryOpen] = useState(false);
 
-  /* The hero, collection and story sections are all edited through the
-     admin's "Main page edits" screen (GET /page-content) — not tied to any
-     product, so a product's photo should never end up here. */
+  /* The hero and collection sections are edited through the admin's "Main
+     page edits" screen (GET /page-content) — not tied to any product, so
+     a product's photo should never end up here. */
   const hero = content.hero ?? {};
   const collection = content.collection ?? {};
-  const story = content.story ?? {};
 
   /* The API only returns live products; the filter stays as a guard. */
   const live = useMemo(
@@ -335,15 +334,7 @@ export default function Store() {
         </div>
       </section>
 
-      {storyOpen && (
-        <ContentModal
-          eyebrow="OUR STORY"
-          heading={story.heading || "Our story"}
-          image={story.image || null}
-          body={story.body || ""}
-          onClose={() => setStoryOpen(false)}
-        />
-      )}
+      {storyOpen && <StoryModal onClose={() => setStoryOpen(false)} />}
     </>
   );
 }

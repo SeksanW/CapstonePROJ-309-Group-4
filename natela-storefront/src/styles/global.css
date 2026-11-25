@@ -95,6 +95,24 @@ p {
 }
 
 /* ---------- logo ---------- */
+/* The header still uses this Poppins stand-in for the real wordmark —
+   swap it in before the client sees this. Their guidelines forbid
+   redrawing or distorting it. The footer and intro use the real logo
+   image instead (.brand-logo), since it reproduces cleanly at that size. */
+.logo {
+  font-weight: 700;
+  font-style: italic;
+  font-size: 26px;
+  letter-spacing: -0.02em;
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: inline-block;
+}
+.logo--sm {
+  font-size: 21px;
+}
 .brand-logo {
   height: 42px;
   width: auto;
@@ -882,7 +900,7 @@ tbody tr:hover {
   }
 }
 
-/* ---------- content modal (Our story / Design popups) ---------- */
+/* ---------- content modal (Design & process popup) ---------- */
 .content-modal__overlay {
   position: fixed;
   inset: 0;
@@ -934,7 +952,122 @@ tbody tr:hover {
   .content-modal__body {
     padding: 32px 22px 36px;
   }
-  .intro-gate__links {
-    gap: 22px;
+  .intro-pill {
+    gap: 12px;
+    padding-inline: 18px;
+  }
+}
+
+/* ---------- story modal (the "Our story" scrollytelling popup) ---------- */
+.story-modal {
+  position: relative;
+  width: min(1100px, 94vw);
+  height: min(800px, 88vh);
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.story-modal__close {
+  z-index: 3;
+}
+.story-modal__scroll {
+  height: 100%;
+  overflow-y: auto;
+}
+.story-modal__grid {
+  display: grid;
+  grid-template-columns: 1fr minmax(0, 640px) 1fr;
+  column-gap: 24px;
+}
+.story-modal__side {
+  position: sticky;
+  top: 0;
+  height: min(800px, 88vh);
+  background-size: cover;
+  background-position: center;
+}
+.story-modal__side--right {
+  transform: scaleX(-1);
+}
+.story-modal__content {
+  padding: 72px 8px 88px;
+  display: flex;
+  flex-direction: column;
+  gap: 100px;
+  min-width: 0;
+}
+.story-stage {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.story-stage--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.story-stage--hero {
+  min-height: 46vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 24px;
+}
+.story-stage__heading--hero {
+  font-size: clamp(1.5rem, 3.4vw, 2.3rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  max-width: 520px;
+}
+.story-stage__eyebrow {
+  margin-bottom: 14px;
+}
+.story-stage__body {
+  font-size: 15.5px;
+  line-height: 1.75;
+  color: var(--ink-soft);
+  margin-bottom: 26px;
+}
+.story-stage__images {
+  display: grid;
+  gap: 14px;
+}
+.story-stage__images--1 {
+  grid-template-columns: 1fr;
+}
+.story-stage__images--2 {
+  grid-template-columns: 1fr 1fr;
+}
+.story-stage__images--3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+.story-stage__images img {
+  width: 100%;
+  height: 280px;
+  object-fit: cover;
+  border-radius: var(--radius-lg);
+  display: block;
+}
+@media (max-width: 860px) {
+  .story-modal__grid {
+    grid-template-columns: 1fr;
+  }
+  .story-modal__side {
+    display: none;
+  }
+}
+@media (max-width: 600px) {
+  .story-modal__content {
+    padding: 56px 20px 64px;
+    gap: 72px;
+  }
+  .story-stage__images--2,
+  .story-stage__images--3 {
+    grid-template-columns: 1fr;
+  }
+  .story-stage__images img {
+    height: 220px;
   }
 }
