@@ -973,6 +973,11 @@ tbody tr:hover {
 .story-modal__scroll {
   height: 100%;
   overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* old Edge */
+}
+.story-modal__scroll::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
 }
 .story-modal__grid {
   display: grid;
@@ -996,12 +1001,12 @@ tbody tr:hover {
   gap: 100px;
   min-width: 0;
 }
-.story-stage {
+.story-reveal {
   opacity: 0;
-  transform: translateY(26px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
+  transform: translateY(22px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
 }
-.story-stage--visible {
+.story-reveal--visible {
   opacity: 1;
   transform: translateY(0);
 }
@@ -1033,6 +1038,7 @@ tbody tr:hover {
 .story-stage__images {
   display: grid;
   gap: 14px;
+  margin-bottom: 26px;
 }
 .story-stage__images--1 {
   grid-template-columns: 1fr;
