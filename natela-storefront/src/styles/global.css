@@ -94,21 +94,14 @@ p {
   color: var(--brand-red);
 }
 
-/* ---------- logo (placeholder wordmark) ---------- */
-/* Replace this with the supplied logo file before showing the client. */
-.logo {
-  font-weight: 700;
-  font-style: italic;
-  font-size: 26px;
-  letter-spacing: -0.02em;
-  background: var(--brand-gradient);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  display: inline-block;
+/* ---------- logo ---------- */
+.brand-logo {
+  height: 42px;
+  width: auto;
+  display: block;
 }
-.logo--sm {
-  font-size: 21px;
+.brand-logo--sm {
+  height: 34px;
 }
 
 /* ---------- buttons ---------- */
@@ -813,8 +806,8 @@ tbody tr:hover {
   animation: intro-breathe 4.5s ease-in-out infinite;
 }
 .intro-pill__logo {
-  font-size: clamp(18px, 2.4vw, 24px);
-  white-space: nowrap;
+  height: clamp(28px, 3.4vw, 38px);
+  width: auto;
 }
 .intro-pill__link {
   background: none;

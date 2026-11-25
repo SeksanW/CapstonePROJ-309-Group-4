@@ -196,7 +196,7 @@ export default function IntroGate() {
               >
                 Our story
               </button>
-              <span className="logo intro-pill__logo">NATELA</span>
+              <img src="/images/natela-logo.png" alt="Natela" className="intro-pill__logo" />
               <button
                 type="button"
                 className="intro-pill__link intro-pill__link--right"

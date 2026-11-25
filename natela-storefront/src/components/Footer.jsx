@@ -14,9 +14,12 @@ export default function Footer() {
     <footer className="footer">
       <div className="footer__grid">
         <div>
-          <span className="logo logo--sm" style={{ marginBottom: 14 }}>
-            NATELA
-          </span>
+          <img
+            src="/images/natela-logo.png"
+            alt="Natela"
+            className="brand-logo brand-logo--sm"
+            style={{ marginBottom: 14 }}
+          />
           <p
             style={{
               fontSize: 13,
