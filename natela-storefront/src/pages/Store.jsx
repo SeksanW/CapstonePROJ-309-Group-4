@@ -101,14 +101,10 @@ export default function Store() {
               marginBottom: 22,
             }}
           >
-            Koi Fish Series
+            {hero.badge || "Koi Fish Series"}
           </span>
           <h1 className="h1" style={{ marginBottom: 20 }}>
-            Built for the
-            <br />
-            ring. Made
-            <br />
-            to last.
+            {hero.heading || "Built for the ring. Made to last."}
           </h1>
           <p
             style={{
@@ -119,15 +115,15 @@ export default function Store() {
               marginBottom: 32,
             }}
           >
-            Hand-finished Muay Thai shorts with a four-way stretch panel and a
-            waistband that stays put through every round.
+            {hero.body ||
+              "Hand-finished Muay Thai shorts with a four-way stretch panel and a waistband that stays put through every round."}
           </p>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-            <a href="#new" className="btn btn--grad">
-              Shop the collection
+            <a href={hero.primaryLink || "#new"} className="btn btn--grad">
+              {hero.primaryLabel || "Shop the collection"}
             </a>
-            <a href="#help" className="btn btn--outline">
-              Find your size
+            <a href={hero.secondaryLink || "#help"} className="btn btn--outline">
+              {hero.secondaryLabel || "Find your size"}
             </a>
           </div>
         </div>
@@ -243,7 +239,7 @@ export default function Store() {
             }}
           >
             <span className="eyebrow" style={{ marginBottom: 16 }}>
-              THE COLLECTION
+              {collection.eyebrow || "THE COLLECTION"}
             </span>
             <h2
               style={{
@@ -254,9 +250,7 @@ export default function Store() {
                 marginBottom: 16,
               }}
             >
-              Light, brightness
-              <br />
-              and hope.
+              {collection.heading || "Light, brightness and hope."}
             </h2>
             <p
               style={{
@@ -266,12 +260,15 @@ export default function Store() {
                 marginBottom: 26,
               }}
             >
-              Natela takes its name from the Aramaic word for light. Every pair
-              in the Flame series carries the gradient — a reminder that the
-              work happens long before the fight.
+              {collection.body ||
+                "Natela takes its name from the Aramaic word for light. Every pair in the Flame series carries the gradient — a reminder that the work happens long before the fight."}
             </p>
-            <a href="#new" className="btn btn--dark" style={{ alignSelf: "flex-start" }}>
-              Explore the series
+            <a
+              href={collection.buttonLink || "#new"}
+              className="btn btn--dark"
+              style={{ alignSelf: "flex-start" }}
+            >
+              {collection.buttonLabel || "Explore the series"}
             </a>
           </div>
         </div>
