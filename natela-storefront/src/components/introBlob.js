@@ -1,7 +1,8 @@
 /* Geometry for the intro's liquid morph: a ring of points animated from a
-   "covers the whole viewport" radius down to a clean rounded-panel radius,
-   drawn as one smooth closed SVG path. Kept separate from IntroGate.jsx
-   since it's pure math, easy to reason about (and tweak) on its own. */
+   "covers the whole viewport" radius down to a wide, short pill-shaped
+   panel, drawn as one smooth closed SVG path. Kept separate from
+   IntroGate.jsx since it's pure math, easy to reason about (and tweak) on
+   its own. */
 
 const TAU = Math.PI * 2;
 export const POINT_COUNT = 16;
@@ -15,16 +16,18 @@ export function makeBlobAngles(count = POINT_COUNT) {
   return Array.from({ length: count }, (_, i) => (i / count) * TAU);
 }
 
-/* A superellipse ("squircle") radius at angle `theta` — a clean rounded
-   rectangle-ish outline once the morph settles, no sharp corners. */
-function squircleRadius(theta, size, power) {
-  const c = Math.abs(Math.cos(theta));
-  const s = Math.abs(Math.sin(theta));
-  return size / Math.pow(c ** power + s ** power, 1 / power);
+/* A superellipse ("squircle") radius at angle `theta`, with independent
+   width/height radii — a pill/stadium-ish outline once the morph settles
+   (wide + short, rounded ends), no sharp corners. A high `power` keeps the
+   sides flat-ish with tightly rounded ends, like a real pill shape. */
+function squircleRadius(theta, rw, rh, power) {
+  const c = Math.abs(Math.cos(theta)) / rw;
+  const s = Math.abs(Math.sin(theta)) / rh;
+  return 1 / Math.pow(c ** power + s ** power, 1 / power);
 }
 
-export function panelRadii(angles, size = 32, power = 5) {
-  return angles.map((theta) => squircleRadius(theta, size, power));
+export function panelRadii(angles, rw, rh, power = 10) {
+  return angles.map((theta) => squircleRadius(theta, rw, rh, power));
 }
 
 export function coverRadii(angles) {
@@ -33,15 +36,18 @@ export function coverRadii(angles) {
 
 /* Blends cover -> panel radii at progress `t` (0..1), with an organic
    wobble layered on top that peaks mid-transition and fades to nothing at
-   both ends — so it settles into a clean panel rather than staying blobby. */
-export function frameRadii(angles, t, phaseOffsets, wobbleMax = 6) {
+   both ends — so it settles into the clean panel shape rather than staying
+   blobby. Wobble scales with the panel's short side so it doesn't overshoot
+   a thin pill. */
+export function frameRadii(angles, t, phaseOffsets, rw, rh) {
   const cover = coverRadii(angles);
-  const panel = panelRadii(angles);
+  const panel = panelRadii(angles, rw, rh);
+  const wobbleMax = Math.min(rw, rh) * 1.1;
   const envelope = Math.sin(t * Math.PI) * wobbleMax;
   return angles.map((theta, i) => {
     const base = cover[i] + (panel[i] - cover[i]) * t;
     const wobble = envelope * Math.sin(phaseOffsets[i] + t * 6);
-    return Math.max(10, base + wobble);
+    return Math.max(2, base + wobble);
   });
 }
 

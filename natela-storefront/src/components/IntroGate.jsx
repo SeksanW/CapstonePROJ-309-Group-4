@@ -3,44 +3,44 @@ import { useLocation } from "react-router-dom";
 import { useProducts } from "../context/ProductsContext";
 import { usePageContent } from "../context/PageContentContext";
 import ContentModal from "./ContentModal";
-import { blobPath, easeInOutCubic, frameRadii, makeBlobAngles, panelRadii } from "./introBlob";
+import { blobPath, easeInOutCubic, frameRadii, makeBlobAngles } from "./introBlob";
 
 /* ---------------------------------------------------------
-   IntroGate — the first-visit homepage sequence:
+   IntroGate — the homepage sequence, on every load of "/":
 
      loading   flat white, "Loading" typed out, waiting on the real
                product + page-content fetches (1s floor so it never
                feels instant/janky on a fast connection)
-     flowing   the white morphs (liquid journey, clean rounded-panel
-               rest state) down to a centered panel, revealing a
-               product photo behind it
-     gate      logo + "Our story" / "Design" over the product photo;
-               any scroll/touch/key advances
+     flowing   the white morphs (liquid journey) down toward a wide,
+               short pill shape, revealing a product photo behind it
+     gate      a frosted-glass pill bar — "Our story" / logo / "Design"
+               — over the product photo; any scroll/touch/key advances
      exiting   fades out, then unmounts for good
 
-   Plays once per browser (localStorage) and only when the visit starts
-   on "/" — client-side navigation back to "/" later doesn't replay it.
-   --------------------------------------------------------- */
+   Only runs when the visit starts on "/" — client-side navigation back
+   to "/" later (without a reload) doesn't replay it. */
 
-const INTRO_SEEN_KEY = "natela.introSeen";
 const MIN_LOADING_MS = 1000;
 const FLOW_MS = 900;
 const EXIT_MS = 500;
 const TYPED_WORD = "Loading";
+
+/* The pill's on-screen size — used both for the real CSS pill at rest and
+   (converted to viewBox units) as the liquid morph's target shape, so the
+   handoff between the two is seamless. */
+function pillPixelSize() {
+  return {
+    width: Math.min(Math.max(window.innerWidth * 0.58, 360), 760),
+    height: Math.min(Math.max(window.innerHeight * 0.1, 62), 86),
+  };
+}
 
 export default function IntroGate() {
   const location = useLocation();
   const { products, loading: productsLoading } = useProducts();
   const { content, loading: contentLoading } = usePageContent();
 
-  const [active] = useState(() => {
-    if (location.pathname !== "/") return false;
-    try {
-      return localStorage.getItem(INTRO_SEEN_KEY) !== "1";
-    } catch {
-      return true;
-    }
-  });
+  const [active] = useState(() => location.pathname === "/");
   const [phase, setPhase] = useState("loading"); // loading | flowing | gate | exiting | done
   const [typedCount, setTypedCount] = useState(0);
   const [openModal, setOpenModal] = useState(null); // "story" | "design" | null
@@ -54,6 +54,13 @@ export default function IntroGate() {
   const phaseOffsets = useRef(angles.map(() => Math.random() * Math.PI * 2));
   const pathRef = useRef(null);
   const [minDelayDone, setMinDelayDone] = useState(false);
+
+  // Viewport-relative pixel size, converted to viewBox units (the viewBox
+  // is stretched non-uniformly to fill the screen, so x and y each need
+  // their own px-per-unit factor).
+  const pill = useMemo(() => pillPixelSize(), []);
+  const panelRw = pill.width / 2 / (window.innerWidth / 100);
+  const panelRh = pill.height / 2 / (window.innerHeight / 100);
 
   const dataReady = !productsLoading && !contentLoading;
   const featuredImage = products.find((p) => p.status === "live" && p.image)?.image ?? null;
@@ -77,11 +84,6 @@ export default function IntroGate() {
   /* Advances once the real data is in AND the minimum delay has passed. */
   useEffect(() => {
     if (!active || phase !== "loading" || !dataReady || !minDelayDone) return;
-    try {
-      localStorage.setItem(INTRO_SEEN_KEY, "1");
-    } catch {
-      /* Private mode or blocked storage — it'll just replay next visit. */
-    }
     setPhase(prefersReducedMotion ? "gate" : "flowing");
   }, [active, phase, dataReady, minDelayDone, prefersReducedMotion]);
 
@@ -94,7 +96,7 @@ export default function IntroGate() {
     function tick(now) {
       const t = Math.min(1, (now - start) / FLOW_MS);
       const eased = easeInOutCubic(t);
-      const radii = frameRadii(angles, eased, phaseOffsets.current);
+      const radii = frameRadii(angles, eased, phaseOffsets.current, panelRw, panelRh);
       pathRef.current?.setAttribute("d", blobPath(angles, radii, 50, 50));
       if (t < 1) {
         raf = requestAnimationFrame(tick);
@@ -104,14 +106,7 @@ export default function IntroGate() {
     }
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [active, phase, angles]);
-
-  /* Draws the resting panel directly when there's no morph to arrive from
-     (reduced motion). Harmless to also re-run after the morph — same shape. */
-  useEffect(() => {
-    if (!active || phase !== "gate" || !pathRef.current) return;
-    pathRef.current.setAttribute("d", blobPath(angles, panelRadii(angles), 50, 50));
-  }, [active, phase, angles]);
+  }, [active, phase, angles, panelRw, panelRh]);
 
   /* Any scroll, touch or "forward" key moves past the gate screen. */
   useEffect(() => {
@@ -160,6 +155,7 @@ export default function IntroGate() {
 
   const story = content.story ?? {};
   const design = content.design ?? {};
+  const settled = phase === "gate" || phase === "exiting";
 
   return (
     <>
@@ -171,12 +167,7 @@ export default function IntroGate() {
         {phase === "loading" ? (
           <div className="intro-flat" />
         ) : (
-          <svg
-            className={`intro-blob${phase === "gate" ? " intro-blob--idle" : ""}`}
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-            aria-hidden="true"
-          >
+          <svg className="intro-blob" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
             <path ref={pathRef} fill="var(--surface)" />
           </svg>
         )}
@@ -192,16 +183,25 @@ export default function IntroGate() {
           </div>
         )}
 
-        {(phase === "gate" || phase === "exiting") && (
+        {settled && (
           <div className="intro-gate">
-            <span className="logo" style={{ fontSize: 34, marginBottom: 22 }}>
-              NATELA
-            </span>
-            <div className="intro-gate__links">
-              <button type="button" onClick={() => setOpenModal("story")}>
+            <div
+              className="intro-pill"
+              style={{ width: pill.width, height: pill.height }}
+            >
+              <button
+                type="button"
+                className="intro-pill__link intro-pill__link--left"
+                onClick={() => setOpenModal("story")}
+              >
                 Our story
               </button>
-              <button type="button" onClick={() => setOpenModal("design")}>
+              <span className="logo intro-pill__logo">NATELA</span>
+              <button
+                type="button"
+                className="intro-pill__link intro-pill__link--right"
+                onClick={() => setOpenModal("design")}
+              >
                 Design
               </button>
             </div>
