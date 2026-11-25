@@ -2,3 +2,7 @@ node_modules
 dist
 .DS_Store
 *.local
+
+# Local-dev stand-in for Cloudinary (see backend LOCAL_UPLOADS_DIR) — photos
+# uploaded through the admin while developing locally land here.
+public/images/uploads/
