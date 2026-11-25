@@ -1,165 +1,164 @@
 import { useEffect, useRef, useState } from "react";
 
-/* The "Our story" popup: a short scrollytelling sequence (not the simple
-   single-blurb ContentModal used for "Design & process") — framed by the
-   koi fabric print sticking to both sides of the scroll column. Each
-   stage reveals its own parts one at a time as it's scrolled to (heading,
-   then image, then body text) — the same staged-reveal feel as the
-   loading screen, rather than a single fade for the whole block. Copy and
+/* The "Our story" popup: a card-based slideshow, one card on screen at a
+   time, advanced by scroll/swipe/arrow keys — not a scrollable page. Each
+   "stack" is a heading card (which clears on its own) followed by a
+   content card that builds in two steps (image on the left, then the text
+   beside it). The koi fabric print lives outside the card, flanking it
+   over the dimmed page behind — not part of the card itself. Copy and
    image order are fixed brand content, not admin-editable like the
    hero/collection banners. */
 
 const KOI = "/images/story/koi-fabric.jpg";
-const REVEAL_STEP_MS = 400;
+const TRANSITION_MS = 320;
+const BUILD_DELAY_MS = 450;
 
-const STAGES = [
-  { kind: "hero", parts: [{ type: "heading", text: "Serving to unleash the everyday warrior in you" }] },
+const CARDS = [
+  { type: "heading", text: "Serving to unleash the everyday warrior in you" },
   {
-    kind: "text",
-    parts: [
-      { type: "images", srcs: ["/images/story/story-01.jpg"] },
-      {
-        type: "body",
-        text: `We, Natalia & Elissa are not building a community - we are part of one. As women who fell in love with the sport, we love everything Muay Thai represents - the strength, discipline, confidence, resilience and community. But when it came to fighter apparel, something was missing.`,
-      },
-    ],
+    type: "content",
+    images: ["/images/story/story-01.jpg"],
+    body: `We, Natalia & Elissa are not building a community - we are part of one. As women who fell in love with the sport, we love everything Muay Thai represents - the strength, discipline, confidence, resilience and community. But when it came to fighter apparel, something was missing.`,
   },
+  { type: "heading", text: "360 WARRIOR" },
   {
-    kind: "text",
-    parts: [
-      { type: "eyebrow", text: "360 WARRIOR" },
-      { type: "images", srcs: ["/images/story/story-02.jpg", "/images/story/story-03.jpg"] },
-      {
-        type: "body",
-        text: `We wanted shorts that celebrated and nurtured both sides of us: strong and feminine, powerful and artistic, graceful and fierce. We wanted apparel that acknowledges everyday internal and external battles we face.`,
-      },
-    ],
+    type: "content",
+    images: ["/images/story/story-02.jpg", "/images/story/story-03.jpg"],
+    body: `We wanted shorts that celebrated and nurtured both sides of us: strong and feminine, powerful and artistic, graceful and fierce. We wanted apparel that acknowledges everyday internal and external battles we face.`,
   },
+  { type: "heading", text: "We serve to unleash the everyday warrior in you!" },
   {
-    kind: "text",
-    parts: [
-      { type: "eyebrow", text: "We serve to unleash the everyday warrior in you!" },
-      { type: "images", srcs: ["/images/story/story-04.jpg", "/images/story/story-05.jpg", "/images/story/story-06.jpg"] },
-      {
-        type: "body",
-        text: `Our vision became a women's Muay Thai brand built around thoughtful fits, beautiful materials, and original artwork. Instead of treating shorts as just another piece of training gear, we wanted each design to feel like wearable art and a badge of honour - inside and outside the ring!`,
-      },
-    ],
+    type: "content",
+    images: ["/images/story/story-04.jpg", "/images/story/story-05.jpg", "/images/story/story-06.jpg"],
+    body: `Our vision became a women's Muay Thai brand built around thoughtful fits, beautiful materials, and original artwork. Instead of treating shorts as just another piece of training gear, we wanted each design to feel like wearable art and a badge of honour - inside and outside the ring!`,
   },
-  {
-    kind: "closing",
-    parts: [
-      { type: "heading", text: "We serve to unleash the everyday warrior in you!" },
-      { type: "cta" },
-    ],
-  },
+  { type: "closing", text: "We serve to unleash the everyday warrior in you!" },
 ];
 
-function Part({ part, onClose }) {
-  switch (part.type) {
-    case "heading":
-      return <h2 className="story-stage__heading story-stage__heading--hero">{part.text}</h2>;
-    case "eyebrow":
-      return <div className="eyebrow story-stage__eyebrow">{part.text}</div>;
-    case "body":
-      return <p className="story-stage__body">{part.text}</p>;
-    case "images":
-      return (
-        <div className={`story-stage__images story-stage__images--${part.srcs.length}`}>
-          {part.srcs.map((src) => (
-            <img key={src} src={src} alt="" />
-          ))}
-        </div>
-      );
-    case "cta":
-      return (
-        <button type="button" className="btn btn--grad story-stage__cta" onClick={onClose}>
-          Join our fight card
-        </button>
-      );
-    default:
-      return null;
-  }
-}
-
-/* Reveals `parts` one at a time, starting once the stage scrolls into
-   view within `rootRef`'s scroll container. */
-function RevealStage({ parts, rootRef, className = "", onClose }) {
-  const ref = useRef(null);
-  const [step, setStep] = useState(0);
-
-  useEffect(() => {
-    if (!ref.current || !rootRef.current) return;
-    let timers = [];
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return;
-        observer.disconnect();
-        timers = parts.map((_, i) =>
-          setTimeout(() => setStep((s) => Math.max(s, i + 1)), i * REVEAL_STEP_MS + 80)
-        );
-      },
-      { root: rootRef.current, threshold: 0.3 }
-    );
-    observer.observe(ref.current);
-    return () => {
-      observer.disconnect();
-      timers.forEach(clearTimeout);
-    };
-    // `parts` is a stable literal from STAGES, not re-created per render.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rootRef]);
-
-  return (
-    <div ref={ref} className={`story-stage ${className}`}>
-      {parts.map((part, i) => (
-        <div key={i} className={`story-reveal${step > i ? " story-reveal--visible" : ""}`}>
-          <Part part={part} onClose={onClose} />
-        </div>
-      ))}
-    </div>
-  );
-}
-
 export default function StoryModal({ onClose }) {
-  const scrollRef = useRef(null);
+  const [index, setIndex] = useState(0);
+  const [fading, setFading] = useState(false);
+  const [built, setBuilt] = useState(false); // content/closing cards' second reveal step
+  const busyRef = useRef(false);
+  const touchStartY = useRef(null);
+
+  function go(next) {
+    if (busyRef.current || next < 0 || next >= CARDS.length || next === index) return;
+    busyRef.current = true;
+    setFading(true);
+    setTimeout(() => {
+      setIndex(next);
+      setBuilt(false);
+      setFading(false);
+      busyRef.current = false;
+    }, TRANSITION_MS);
+  }
+
+  /* The image (or heading, for the closing card) appears first; this
+     brings in the second part — body text, or the CTA button — shortly
+     after, same staged feel as the loading screen. */
+  useEffect(() => {
+    if (CARDS[index].type === "heading") return;
+    const t = setTimeout(() => setBuilt(true), BUILD_DELAY_MS);
+    return () => clearTimeout(t);
+  }, [index]);
 
   useEffect(() => {
-    const onKeyDown = (e) => e.key === "Escape" && onClose();
-    document.addEventListener("keydown", onKeyDown);
+    function onWheel(e) {
+      if (e.deltaY > 25) go(index + 1);
+      else if (e.deltaY < -25) go(index - 1);
+    }
+    function onKeyDown(e) {
+      if (e.key === "Escape") return onClose();
+      if (["ArrowDown", "PageDown", " "].includes(e.key)) go(index + 1);
+      if (["ArrowUp", "PageUp"].includes(e.key)) go(index - 1);
+    }
+    function onTouchStart(e) {
+      touchStartY.current = e.touches[0].clientY;
+    }
+    function onTouchEnd(e) {
+      if (touchStartY.current == null) return;
+      const delta = touchStartY.current - e.changedTouches[0].clientY;
+      if (delta > 40) go(index + 1);
+      else if (delta < -40) go(index - 1);
+      touchStartY.current = null;
+    }
+    window.addEventListener("wheel", onWheel, { passive: true });
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchend", onTouchEnd);
+    return () => {
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchend", onTouchEnd);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [index]);
+
+  useEffect(() => {
     const { overflow } = document.body.style;
     document.body.style.overflow = "hidden";
     return () => {
-      document.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = overflow;
     };
-  }, [onClose]);
+  }, []);
+
+  const card = CARDS[index];
+  const centered = card.type === "heading" || card.type === "closing";
 
   return (
-    <div className="content-modal__overlay" onClick={onClose}>
-      <div className="story-modal" role="dialog" aria-modal="true" aria-label="Our story" onClick={(e) => e.stopPropagation()}>
-        <button className="content-modal__close story-modal__close" onClick={onClose} aria-label="Close">
+    <div className="story-overlay" onClick={onClose}>
+      <div className="story-overlay__koi story-overlay__koi--left" style={{ backgroundImage: `url(${KOI})` }} />
+      <div className="story-overlay__koi story-overlay__koi--right" style={{ backgroundImage: `url(${KOI})` }} />
+
+      <div
+        className={`story-card${centered ? " story-card--center" : ""}${fading ? " story-card--fading" : ""}`}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Our story"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button className="content-modal__close" onClick={onClose} aria-label="Close">
           ×
         </button>
 
-        <div className="story-modal__scroll" ref={scrollRef}>
-          <div className="story-modal__grid">
-            <div className="story-modal__side story-modal__side--left" style={{ backgroundImage: `url(${KOI})` }} />
+        {card.type === "heading" && <h2 className="story-stage__heading story-stage__heading--hero">{card.text}</h2>}
 
-            <div className="story-modal__content">
-              {STAGES.map((stage, i) => (
-                <RevealStage
-                  key={i}
-                  parts={stage.parts}
-                  rootRef={scrollRef}
-                  onClose={onClose}
-                  className={stage.kind === "hero" || stage.kind === "closing" ? "story-stage--hero" : ""}
-                />
+        {card.type === "content" && (
+          <div className="story-card__content">
+            <div className={`story-card__media story-reveal${built ? " story-reveal--visible" : ""}`}>
+              {card.images.map((src) => (
+                <img key={src} src={src} alt="" />
               ))}
             </div>
-
-            <div className="story-modal__side story-modal__side--right" style={{ backgroundImage: `url(${KOI})` }} />
+            <p className={`story-stage__body story-reveal${built ? " story-reveal--visible" : ""}`}>{card.body}</p>
           </div>
+        )}
+
+        {card.type === "closing" && (
+          <>
+            <h2 className="story-stage__heading story-stage__heading--hero">{card.text}</h2>
+            <button
+              type="button"
+              className={`btn btn--grad story-stage__cta story-reveal${built ? " story-reveal--visible" : ""}`}
+              onClick={onClose}
+            >
+              Join our fight card
+            </button>
+          </>
+        )}
+
+        <div className="story-card__dots">
+          {CARDS.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              aria-label={`Go to card ${i + 1}`}
+              className={`story-card__dot${i === index ? " story-card__dot--active" : ""}`}
+              onClick={() => go(i)}
+            />
+          ))}
         </div>
       </div>
     </div>
