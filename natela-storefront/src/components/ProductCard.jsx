@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SIZES } from "../data/products";
 import { useCart, money } from "../context/CartContext";
 import Stars from "./Stars";
@@ -12,18 +12,34 @@ import ShortsIcon from "./ShortsIcon";
 
 export default function ProductCard({ product }) {
   const [selectedSize, setSelectedSize] = useState(null);
-  const [justAdded, setJustAdded] = useState(false);
-  const { addItem } = useCart();
+  // "idle" → "filling" (bar sweeps left to right) → "added", then the
+  // cart panel opens. Timings match .add-sweep in global.css.
+  const [addState, setAddState] = useState("idle");
+  const timers = useRef([]);
+  const { addItem, openDrawer } = useCart();
+
+  useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
   const onSale = product.comparePrice && product.comparePrice > product.price;
   const totalStock = Object.values(product.stock).reduce((a, b) => a + b, 0);
   const soldOut = totalStock === 0;
 
   function handleAdd() {
-    if (!selectedSize) return;
-    addItem(product, selectedSize, 1);
-    setJustAdded(true);
-    setTimeout(() => setJustAdded(false), 1600);
+    if (!selectedSize || addState === "filling") return;
+    addItem(product, selectedSize, 1, { openDrawer: false });
+    timers.current.forEach(clearTimeout);
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+      setAddState("added");
+      openDrawer();
+      timers.current = [setTimeout(() => setAddState("idle"), 2000)];
+      return;
+    }
+    setAddState("filling");
+    timers.current = [
+      setTimeout(() => setAddState("added"), 600),
+      setTimeout(openDrawer, 1050),
+      setTimeout(() => setAddState("idle"), 3200),
+    ];
   }
 
   const tag = soldOut ? "SOLD OUT" : onSale ? "SALE" : product.tag;
@@ -96,12 +112,22 @@ export default function ProductCard({ product }) {
       </div>
 
       <button
-        className="btn btn--dark btn--block"
+        className={`btn btn--dark btn--block add-sweep add-sweep--${addState}`}
         style={{ marginTop: 10, padding: "11px 0", fontSize: 13 }}
         disabled={soldOut || !selectedSize}
         onClick={handleAdd}
+        aria-live="polite"
       >
-        {soldOut ? "Sold out" : justAdded ? "Added ✓" : "Add to cart"}
+        <span className="add-sweep__fill" aria-hidden="true" />
+        <span className="add-sweep__label">
+          {soldOut
+            ? "Sold out"
+            : addState === "added"
+            ? "Added to cart ✓"
+            : addState === "filling"
+            ? "Adding…"
+            : "Add to cart"}
+        </span>
       </button>
     </div>
   );

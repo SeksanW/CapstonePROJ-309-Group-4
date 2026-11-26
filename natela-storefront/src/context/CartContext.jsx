@@ -114,6 +114,7 @@ export function CartProvider({ children }) {
       clear,
       totals,
       drawerOpen,
+      openDrawer: () => setDrawerOpen(true),
       closeDrawer: () => setDrawerOpen(false),
     }),
     [items, totals, drawerOpen]

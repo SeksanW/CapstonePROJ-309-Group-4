@@ -231,6 +231,11 @@ textarea.fld {
   position: relative;
   display: flex;
   align-items: center;
+  /* It's a button now (opens the cart panel), so drop the button chrome. */
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
 }
 .cart-count {
   position: absolute;
@@ -973,6 +978,7 @@ tbody tr:hover {
   background: rgba(0, 0, 0, 0.45);
   display: flex;
   justify-content: flex-end;
+  animation: cart-overlay-in 0.3s ease both;
 }
 .cart-drawer {
   width: min(420px, 100vw);
@@ -981,7 +987,44 @@ tbody tr:hover {
   display: flex;
   flex-direction: column;
   box-shadow: -12px 0 32px rgba(0, 0, 0, 0.14);
-  animation: cart-drawer-in 0.22s ease;
+  /* Fast start, soft landing. */
+  animation: cart-drawer-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes cart-overlay-in {
+  from {
+    opacity: 0;
+  }
+}
+/* Contents flow in one after another once the panel is nearly there. */
+.cart-drawer__flow {
+  animation: cart-flow-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(0.16s + var(--i, 0) * 0.07s);
+}
+@keyframes cart-flow-in {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+}
+/* Closing: backdrop fades, panel slides back out (260ms, see LEAVE_MS). */
+.cart-drawer-overlay.cart-drawer--leaving {
+  animation: cart-overlay-out 0.26s ease both;
+}
+.cart-drawer--leaving .cart-drawer {
+  animation: cart-drawer-out 0.26s cubic-bezier(0.55, 0, 1, 0.45) both;
+}
+.cart-drawer--leaving .cart-drawer__flow {
+  animation: none;
+}
+@keyframes cart-overlay-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes cart-drawer-out {
+  to {
+    transform: translateX(100%);
+  }
 }
 @keyframes cart-drawer-in {
   from {
@@ -998,6 +1041,14 @@ tbody tr:hover {
   padding: 20px 24px;
   border-bottom: 1px solid var(--line);
   flex-shrink: 0;
+}
+.cart-drawer__title {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.cart-drawer__title .h3 {
+  margin: 0;
 }
 .cart-drawer__close {
   background: none;
@@ -1020,6 +1071,18 @@ tbody tr:hover {
   padding: 20px 24px 24px;
   border-top: 1px solid var(--line);
   flex-shrink: 0;
+}
+/* Checkout is a link styled as a button; links ignore width unless block. */
+.cart-drawer__footer .btn {
+  display: block;
+  text-align: center;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cart-drawer,
+  .cart-drawer-overlay,
+  .cart-drawer__flow {
+    animation: none !important;
+  }
 }
 @media (max-width: 520px) {
   .content-modal__body {
@@ -1370,5 +1433,51 @@ tbody tr:hover {
   }
   to {
     transform: rotate(14deg);
+  }
+}
+
+/* Add to cart: a brand-gradient bar sweeps left → right (0.6s), then
+   "Added to cart ✓" fades up on the filled button (ProductCard). */
+.add-sweep {
+  position: relative;
+  overflow: hidden;
+}
+.add-sweep__fill {
+  position: absolute;
+  inset: 0;
+  background: var(--brand-gradient);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+.add-sweep__label {
+  position: relative;
+}
+.add-sweep--filling .add-sweep__fill {
+  animation: add-sweep-fill 0.6s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+.add-sweep--added .add-sweep__fill {
+  transform: scaleX(1);
+}
+.add-sweep--filling .add-sweep__label {
+  opacity: 0.85;
+}
+.add-sweep--added .add-sweep__label {
+  animation: add-sweep-label 0.35s ease both;
+}
+@keyframes add-sweep-fill {
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes add-sweep-label {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .add-sweep--filling .add-sweep__fill,
+  .add-sweep--added .add-sweep__label {
+    animation: none;
   }
 }
