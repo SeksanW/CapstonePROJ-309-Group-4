@@ -3,7 +3,6 @@ const columns = [
     head: "SHOP",
     links: ["All shorts", "New arrivals", "On sale", "Bundles"],
   },
-  { head: "HELP", links: ["Size guide", "Shipping", "Returns", "FAQ"] },
   { head: "BRAND", links: ["Our story", "Contact", "Instagram"] },
 ];
 

@@ -14,10 +14,3 @@ export const sports = [
   { name: "MMA", slug: "mma" },
   { name: "Training", slug: "training" },
 ];
-
-export const helpLinks = [
-  { title: "Size guide", sub: "Measurements and fit notes for every cut" },
-  { title: "Shipping", sub: "Worldwide delivery times and costs" },
-  { title: "Returns", sub: "30 days, unworn, tags attached" },
-  { title: "FAQ", sub: "Care, fabric and order questions" },
-];
