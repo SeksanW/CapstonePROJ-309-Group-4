@@ -1,9 +1,8 @@
-import BubblePopup from "./BubblePopup";
+/* The "Design" content, shown inline on the Store page's "Design"
+   section (components/StackSection). Fixed brand content, not
+   admin-editable. */
 
-/* The "Design" popup's content — see BubblePopup for how it's shown. Ends
-   on the same closing bubble as "Our story" for consistency. */
-
-const STACKS = [
+export const DESIGN_STACKS = [
   {
     heading: "The Inspiration",
     images: ["/images/design/design-01.jpg"],
@@ -22,9 +21,4 @@ const STACKS = [
     body: `You are the true Hero fighting your own mind. Our brand provides the tools, map, and encouragement to help you defeat those thoughts. When you wear our products, you are transformed and feel like the everyday warrior you are.`,
     imageLayout: "side",
   },
-  { heading: "We serve to unleash the everyday warrior in you!", closing: true },
 ];
-
-export default function DesignModal({ onClose, onStore }) {
-  return <BubblePopup stacks={STACKS} label="Design" onClose={onClose} onStore={onStore} />;
-}

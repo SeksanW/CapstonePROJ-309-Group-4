@@ -46,16 +46,6 @@ export default function Header() {
             </svg>
           </div>
 
-          <button
-            aria-label="Search"
-            style={{ background: "none", border: "none", padding: 0, display: "flex" }}
-          >
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="1.8" strokeLinecap="round">
-              <circle cx="11" cy="11" r="7" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-          </button>
-
           <Link to="/cart" className="cart-link" aria-label={`Cart, ${totals.count} items`}>
             <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M6 8h12l-1 12H7L6 8z" />

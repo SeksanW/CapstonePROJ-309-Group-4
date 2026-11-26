@@ -2,8 +2,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useProducts } from "../context/ProductsContext";
 import { usePageContent } from "../context/PageContentContext";
-import StoryModal from "./StoryModal";
-import DesignModal from "./DesignModal";
 import { blobPath, easeInOutCubic, frameRadii, makeBlobAngles } from "./introBlob";
 
 /* ---------------------------------------------------------
@@ -15,7 +13,9 @@ import { blobPath, easeInOutCubic, frameRadii, makeBlobAngles } from "./introBlo
      flowing   the white morphs (liquid journey) down toward a wide,
                short pill shape, revealing a product photo behind it
      gate      a frosted-glass pill bar — "Our story" / logo / "Design"
-               — over the product photo; any scroll/touch/key advances
+               — over the product photo; any scroll/touch/key advances,
+               or clicking "Our story"/"Design" advances straight into
+               that section of the page
      exiting   fades out, then unmounts for good
 
    Only runs when the visit starts on "/" — client-side navigation back
@@ -38,13 +38,13 @@ function pillPixelSize() {
 
 export default function IntroGate() {
   const location = useLocation();
-  const { products, loading: productsLoading } = useProducts();
-  const { loading: contentLoading } = usePageContent();
+  const { loading: productsLoading } = useProducts();
+  const { content, loading: contentLoading } = usePageContent();
 
   const [active] = useState(() => location.pathname === "/");
   const [phase, setPhase] = useState("loading"); // loading | flowing | gate | exiting | done
   const [typedCount, setTypedCount] = useState(0);
-  const [openModal, setOpenModal] = useState(null); // "story" | "design" | null
+  const scrollTargetRef = useRef(null); // "story" | "design" | null — set when a pill link is clicked
 
   const prefersReducedMotion = useMemo(
     () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
@@ -64,7 +64,9 @@ export default function IntroGate() {
   const panelRh = pill.height / 2 / (window.innerHeight / 100);
 
   const dataReady = !productsLoading && !contentLoading;
-  const featuredImage = products.find((p) => p.status === "live" && p.image)?.image ?? null;
+  // Admin-set background for this screen (Page Content > Loading screen),
+  // not tied to any particular product.
+  const introImage = content.intro?.image ?? null;
 
   /* Minimum time the loading screen stays up, so a cached/instant fetch
      doesn't make it flash by. */
@@ -109,11 +111,9 @@ export default function IntroGate() {
     return () => cancelAnimationFrame(raf);
   }, [active, phase, angles, panelRw, panelRh]);
 
-  /* Any scroll, touch or "forward" key moves past the gate screen — but
-     not while "Our story"/"Design" is open on top of it, or scrolling to
-     read that popup would also dismiss the gate underneath it. */
+  /* Any scroll, touch or "forward" key moves past the gate screen. */
   useEffect(() => {
-    if (!active || phase !== "gate" || openModal) return;
+    if (!active || phase !== "gate") return;
     function advance() {
       setPhase("exiting");
     }
@@ -131,12 +131,18 @@ export default function IntroGate() {
       window.removeEventListener("touchmove", advance);
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [active, phase, openModal]);
+  }, [active, phase]);
 
-  /* Fades out, then unmounts for good. */
+  /* Fades out, then unmounts for good. If a pill link was clicked, jump
+     straight to that section once the page underneath is actually
+     visible and scrollable (body scroll stays locked until "done"). */
   useEffect(() => {
     if (!active || phase !== "exiting") return;
-    const t = setTimeout(() => setPhase("done"), EXIT_MS);
+    const t = setTimeout(() => {
+      setPhase("done");
+      const id = scrollTargetRef.current;
+      if (id) document.getElementById(id)?.scrollIntoView();
+    }, EXIT_MS);
     return () => clearTimeout(t);
   }, [active, phase]);
 
@@ -158,19 +164,18 @@ export default function IntroGate() {
 
   const settled = phase === "gate" || phase === "exiting";
 
-  /* "Store" in a popup opened from the gate should actually land the
-     visitor on the store, not just close the popup back onto the gate
-     they'd still have to scroll past. */
-  function goToStore() {
-    setOpenModal(null);
+  /* Clicking "Our story"/"Design" advances past the gate like a normal
+     scroll, then lands scrolled to that section instead of the top. */
+  function goToSection(id) {
+    scrollTargetRef.current = id;
     setPhase("exiting");
   }
 
   return (
     <>
       <div className={`intro-overlay${phase === "exiting" ? " intro-overlay--exiting" : ""}`}>
-        {featuredImage && (
-          <div className="intro-bg" style={{ backgroundImage: `url(${featuredImage})` }} />
+        {introImage && (
+          <div className="intro-bg" style={{ backgroundImage: `url(${introImage})` }} />
         )}
 
         {phase === "loading" ? (
@@ -201,7 +206,7 @@ export default function IntroGate() {
               <button
                 type="button"
                 className="intro-pill__link intro-pill__link--left"
-                onClick={() => setOpenModal("story")}
+                onClick={() => goToSection("story")}
               >
                 Our story
               </button>
@@ -209,7 +214,7 @@ export default function IntroGate() {
               <button
                 type="button"
                 className="intro-pill__link intro-pill__link--right"
-                onClick={() => setOpenModal("design")}
+                onClick={() => goToSection("design")}
               >
                 Design
               </button>
@@ -223,13 +228,6 @@ export default function IntroGate() {
           </div>
         )}
       </div>
-
-      {openModal === "story" && (
-        <StoryModal onClose={() => setOpenModal(null)} onStore={goToStore} />
-      )}
-      {openModal === "design" && (
-        <DesignModal onClose={() => setOpenModal(null)} onStore={goToStore} />
-      )}
     </>
   );
 }

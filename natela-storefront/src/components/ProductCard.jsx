@@ -52,27 +52,28 @@ export default function ProductCard({ product }) {
 
       <Stars rating={product.rating} reviews={product.reviews} />
 
-      <div className="card__name">{product.name}</div>
-
-      <div className="card__price">
-        {onSale ? (
-          <>
-            <span style={{ color: "var(--brand-red)", fontWeight: 600 }}>
-              {money(product.price)}
-            </span>{" "}
-            <span
-              style={{
-                color: "var(--ink-faint)",
-                textDecoration: "line-through",
-                fontSize: 13,
-              }}
-            >
-              {money(product.comparePrice)}
-            </span>
-          </>
-        ) : (
-          money(product.price)
-        )}
+      <div className="card__name-price">
+        <span className="card__name">{product.name}</span>
+        <span className="card__price">
+          {onSale ? (
+            <>
+              <span style={{ color: "var(--brand-red)", fontWeight: 600 }}>
+                {money(product.price)}
+              </span>{" "}
+              <span
+                style={{
+                  color: "var(--ink-faint)",
+                  textDecoration: "line-through",
+                  fontSize: 13,
+                }}
+              >
+                {money(product.comparePrice)}
+              </span>
+            </>
+          ) : (
+            money(product.price)
+          )}
+        </span>
       </div>
 
       <div className="sizes">
@@ -100,13 +101,7 @@ export default function ProductCard({ product }) {
         disabled={soldOut || !selectedSize}
         onClick={handleAdd}
       >
-        {soldOut
-          ? "Sold out"
-          : justAdded
-          ? "Added ✓"
-          : selectedSize
-          ? `Add ${selectedSize} to cart`
-          : "Choose a size"}
+        {soldOut ? "Sold out" : justAdded ? "Added ✓" : "Add to cart"}
       </button>
     </div>
   );

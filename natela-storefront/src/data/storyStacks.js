@@ -1,8 +1,8 @@
-import BubblePopup from "./BubblePopup";
+/* The "Our story" content, shown inline on the Store page's "Our story"
+   section (components/StackSection). Fixed brand content, not
+   admin-editable. */
 
-/* The "Our story" popup's content — see BubblePopup for how it's shown. */
-
-const STACKS = [
+export const STORY_STACKS = [
   {
     heading: "Serving to unleash the everyday warrior in you",
     images: ["/images/story/story-01.jpg"],
@@ -15,13 +15,7 @@ const STACKS = [
     body: `We wanted shorts that celebrated and nurtured both sides of us: strong and feminine, powerful and artistic, graceful and fierce. We wanted apparel that acknowledges everyday internal and external battles we face.`,
   },
   {
-    heading: "We serve to unleash the everyday warrior in you!",
     images: ["/images/story/story-04.jpg", "/images/story/story-05.jpg", "/images/story/story-06.jpg"],
     body: `Our vision became a women's Muay Thai brand built around thoughtful fits, beautiful materials, and original artwork. Instead of treating shorts as just another piece of training gear, we wanted each design to feel like wearable art and a badge of honour - inside and outside the ring!`,
   },
-  { heading: "We serve to unleash the everyday warrior in you!", closing: true },
 ];
-
-export default function StoryModal({ onClose, onStore }) {
-  return <BubblePopup stacks={STACKS} label="Our story" onClose={onClose} onStore={onStore} />;
-}

@@ -287,14 +287,21 @@ textarea.fld {
   border-radius: var(--radius);
   color: #fff;
 }
+/* Name and price share a row, right above the size buttons. */
+.card__name-price {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 13px;
+}
 .card__name {
   font-size: 14.5px;
   font-weight: 500;
-  margin-bottom: 5px;
 }
 .card__price {
   font-size: 14px;
-  margin-bottom: 13px;
+  white-space: nowrap;
 }
 
 /* ---------- size buttons ---------- */
@@ -948,6 +955,63 @@ tbody tr:hover {
   line-height: 1.7;
   color: var(--ink-soft);
 }
+
+/* ---------- cart drawer (opens on "Add to cart") ---------- */
+.cart-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: flex-end;
+}
+.cart-drawer {
+  width: min(420px, 100vw);
+  height: 100%;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  box-shadow: -12px 0 32px rgba(0, 0, 0, 0.14);
+  animation: cart-drawer-in 0.22s ease;
+}
+@keyframes cart-drawer-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+.cart-drawer__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.cart-drawer__close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--ink-muted);
+  cursor: pointer;
+  padding: 4px;
+}
+.cart-drawer__close:hover {
+  color: var(--ink);
+}
+.cart-drawer__items {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 24px;
+}
+.cart-drawer__footer {
+  padding: 20px 24px 24px;
+  border-top: 1px solid var(--line);
+  flex-shrink: 0;
+}
 @media (max-width: 520px) {
   .content-modal__body {
     padding: 32px 22px 36px;
@@ -958,104 +1022,45 @@ tbody tr:hover {
   }
 }
 
-/* ---------- story panel (the "Our story" popup — a continuous,
-   freely-scrollable feed of bubbles, not a slideshow) ---------- */
-.story-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1200;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
-/* The koi fabric print lives on the dimmed backdrop, outside the panel —
-   not inside it. Sized and centered to match the panel itself (not the
-   full viewport height), filling the strip completely (`cover`, so there's
-   no empty backdrop showing through inside the strip itself) and widened
-   to nearly touch the panel's edge — the only gap is the couple of px
-   between the koi and the panel, not at the outer viewport edge. The
-   source image (koi-fabric.jpg) is pre-cropped so the design's own centre
-   sits at the image's centre, matching this strip's ~0.56 aspect ratio, so
-   `cover` only has to trim the edges, not the design itself. */
-.story-overlay__koi {
-  position: fixed;
-  top: 50%;
-  height: min(720px, 86vh);
-  width: clamp(90px, calc((100vw - min(720px, 94vw)) / 2 - 2px), 420px);
-  transform: translateY(-50%);
-  background-size: cover;
-  background-position: center;
-}
-.story-overlay__koi--left {
-  left: 0;
-}
-.story-overlay__koi--right {
-  right: 0;
-  transform: translateY(-50%) scaleX(-1);
-}
-.story-panel {
-  position: relative;
-  z-index: 1;
-  width: min(720px, 94vw);
-  height: min(720px, 86vh);
-  background: var(--surface-grey);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-}
-.story-panel__scroll {
-  height: 100%;
-  overflow-y: auto;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* old Edge */
-}
-.story-panel__scroll::-webkit-scrollbar {
-  display: none; /* Chrome, Safari */
-}
-.story-panel__content {
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
-  padding: 64px 32px 72px;
-}
+/* ---------- story bubbles (the "Our story"/"Design" sections on the
+   Store page — a continuous feed of bubbles, not a slideshow) ---------- */
 
-/* Each "stack" is its own floating bubble — distinct from the panel's
-   own background — that fills in (heading, then image/text) and never
-   empties back out once revealed. */
+/* Each "stack" is its own floating bubble that fills in (heading, then
+   image/text) and never empties back out once revealed. */
 .story-bubble {
   background: var(--surface);
   border-radius: var(--radius-lg);
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
-  padding: 36px 36px 40px;
+  padding: clamp(32px, 5vw, 64px);
 }
 .story-bubble__heading {
-  font-size: clamp(1.25rem, 2.6vw, 1.6rem);
+  font-size: clamp(1.6rem, 4vw, 2.6rem);
   font-weight: 700;
   letter-spacing: -0.02em;
-  line-height: 1.3;
+  line-height: 1.2;
   text-align: center;
 }
 .story-bubble__body {
-  margin-top: 26px;
+  margin-top: 32px;
 }
 /* Bubble 1's single image reads better beside the text than stacked
    above it. */
 .story-bubble__body--side {
   display: flex;
   align-items: center;
-  gap: 28px;
+  gap: 48px;
 }
 .story-bubble__body--side .story-stage__images {
-  flex: 0 0 42%;
+  flex: 0 0 48%;
   margin-bottom: 0;
 }
 .story-bubble__body--side .story-stage__images img {
-  height: 190px;
+  height: min(55vh, 460px);
 }
 .story-bubble__body--side .story-stage__body {
   flex: 1;
   min-width: 0;
+  max-width: 560px;
 }
 
 .story-reveal {
@@ -1068,14 +1073,16 @@ tbody tr:hover {
   transform: translateY(0);
 }
 .story-stage__body {
-  font-size: 15px;
-  line-height: 1.75;
+  font-size: 16px;
+  line-height: 1.8;
   color: var(--ink-soft);
+  max-width: 680px;
+  margin-inline: auto;
 }
 .story-stage__images {
   display: grid;
-  gap: 12px;
-  margin-bottom: 22px;
+  gap: 16px;
+  margin-bottom: 28px;
 }
 .story-stage__images--1 {
   grid-template-columns: 1fr;
@@ -1088,51 +1095,21 @@ tbody tr:hover {
 }
 .story-stage__images img {
   width: 100%;
-  height: 220px;
+  height: min(50vh, 420px);
   object-fit: cover;
   border-radius: var(--radius-lg);
   display: block;
 }
-.story-stage__cta {
-  display: block;
-  margin: 24px auto 0;
-}
-.story-store-link {
-  display: block;
-  margin: 14px auto 0;
-  background: none;
-  border: none;
-  padding: 0;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ink-soft);
-  text-decoration: underline;
-  cursor: pointer;
-}
-.story-store-link:hover {
-  color: var(--brand-red);
-}
 @media (max-width: 760px) {
-  .story-overlay__koi {
-    display: none;
-  }
-  .story-panel {
-    height: min(720px, 90vh);
-  }
-  .story-panel__content {
-    padding: 48px 20px 56px;
-  }
-  .story-bubble {
-    padding: 26px 22px 30px;
+  .story-bubble__body--side .story-stage__images img {
+    height: 260px;
   }
   .story-stage__images--2,
   .story-stage__images--3 {
     grid-template-columns: 1fr;
   }
   .story-stage__images img {
-    height: 170px;
+    height: 220px;
   }
   .story-bubble__body--side {
     flex-direction: column;
