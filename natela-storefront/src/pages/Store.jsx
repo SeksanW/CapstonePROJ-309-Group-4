@@ -128,8 +128,8 @@ export default function Store() {
 
       {/* ---------- FEATURED PRODUCT ---------- */}
       {featured && (
-        <section className="page" style={{ paddingTop: 64 }}>
-          <div style={{ maxWidth: 320, margin: "0 auto" }}>
+        <section className="page" style={{ paddingBlock: 64 }}>
+          <div className="featured-card" style={{ maxWidth: 640, margin: "0 auto" }}>
             <ProductCard product={featured} />
           </div>
         </section>

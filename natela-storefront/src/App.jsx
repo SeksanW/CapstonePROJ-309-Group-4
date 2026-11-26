@@ -28,7 +28,7 @@ function StoreLayout() {
           style={{
             textAlign: "center",
             padding: "12px 24px",
-            background: "var(--surface-soft)",
+            background: "var(--brand-black)",
             fontSize: 13,
             fontWeight: 600,
             letterSpacing: "0.02em",

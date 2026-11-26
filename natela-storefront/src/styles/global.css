@@ -276,6 +276,15 @@ textarea.fld {
 .card:hover .card__ph {
   transform: scale(1.03);
 }
+/* Featured card on the homepage: show the whole photo, no fixed height. */
+.featured-card .card__ph {
+  height: auto;
+}
+.featured-card .card__ph img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
 .card__tag {
   position: absolute;
   top: 12px;
