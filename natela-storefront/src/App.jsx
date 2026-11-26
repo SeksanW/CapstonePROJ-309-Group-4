@@ -8,6 +8,7 @@ import CartDrawer from "./components/CartDrawer";
 import Store from "./pages/Store";
 import Cart from "./pages/Cart";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
+import OurStory from "./pages/OurStory";
 
 /* Storefront layout: top banner, header and footer around every page, plus
    the floating help/returns chat widget. IntroGate covers all of it (it's a
@@ -56,6 +57,7 @@ export default function App() {
       <Route element={<StoreLayout />}>
         <Route path="/" element={<Store />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/our-story" element={<OurStory />} />
         <Route path="/checkout/success" element={<CheckoutSuccess />} />
       </Route>
       <Route

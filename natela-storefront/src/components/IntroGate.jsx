@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useProducts } from "../context/ProductsContext";
 import { usePageContent } from "../context/PageContentContext";
-import StoryModal from "./StoryModal";
 import DesignModal from "./DesignModal";
 import { blobPath, easeInOutCubic, frameRadii, makeBlobAngles } from "./introBlob";
 
@@ -38,6 +37,7 @@ function pillPixelSize() {
 
 export default function IntroGate() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { loading: productsLoading } = useProducts();
   const { content, loading: contentLoading } = usePageContent();
 
@@ -203,7 +203,10 @@ export default function IntroGate() {
               <button
                 type="button"
                 className="intro-pill__link intro-pill__link--left"
-                onClick={() => setOpenModal("story")}
+                onClick={() => {
+                  setPhase("exiting");
+                  navigate("/our-story");
+                }}
               >
                 Our story
               </button>
@@ -226,9 +229,6 @@ export default function IntroGate() {
         )}
       </div>
 
-      {openModal === "story" && (
-        <StoryModal onClose={() => setOpenModal(null)} onStore={goToStore} />
-      )}
       {openModal === "design" && (
         <DesignModal onClose={() => setOpenModal(null)} onStore={goToStore} />
       )}

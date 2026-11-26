@@ -1187,6 +1187,125 @@ tbody tr:hover {
 .story-store-link:hover {
   color: var(--brand-red);
 }
+
+/* ---------- /our-story page ---------- */
+/* Photos slide left → right across the background; the story sits on a
+   frosted panel in front. Fills the screen under the header. */
+.story-page {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 128px); /* screen minus top banner + header */
+  padding: 32px var(--page-pad);
+}
+.story-page__marquee {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+/* Light veil over the photos so the panel reads as the focus. */
+.story-page__marquee::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.35);
+}
+.story-page__track {
+  box-sizing: border-box;
+  display: flex;
+  height: 100%;
+  width: max-content;
+  padding-block: 8px; /* space above and below every photo */
+  animation: story-slide 70s linear infinite;
+  /* Still until the visitor scrolls (OurStory.jsx adds .is-moving), then
+     pauses where it is once they stop. */
+  animation-play-state: paused;
+}
+.story-page.is-moving .story-page__track {
+  animation-play-state: running;
+}
+.story-page__track img {
+  height: 100%;
+  width: auto;
+  /* 8px each side = 16px between photos. Margin, not gap, so both halves
+     of the loop are equal width. */
+  margin-inline: 8px;
+  border-radius: 14px;
+  object-fit: cover;
+  display: block;
+}
+@keyframes story-slide {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .story-page__track {
+    animation: none;
+  }
+}
+.story-page__panel {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 720px;
+  padding: 36px 44px 40px;
+  background: rgba(255, 255, 255, 0.9);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+  text-align: center;
+}
+.story-page__title {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 700;
+  line-height: 1.15;
+  margin: 0 0 10px;
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.story-page__panel h2 {
+  font-size: clamp(1.2rem, 2.2vw, 1.6rem);
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 0 0 20px;
+  color: var(--ink);
+}
+.story-page__panel p {
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--ink-soft);
+  text-align: left;
+}
+.story-page__panel p + p {
+  margin-top: 18px;
+}
+.story-page__panel .story-page__closing {
+  margin-top: 28px;
+  font-size: clamp(1.1rem, 2vw, 1.35rem);
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--ink);
+  text-align: center;
+}
+.story-page__cta {
+  display: block;
+  width: fit-content;
+  margin: 24px auto 0;
+}
+@media (max-width: 640px) {
+  .story-page__panel {
+    padding: 28px 22px 32px;
+  }
+}
 @media (max-width: 760px) {
   .story-overlay__koi {
     display: none;

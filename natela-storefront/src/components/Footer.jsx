@@ -1,10 +1,11 @@
 import { useState } from "react";
-import StoryModal from "./StoryModal";
+import { Link } from "react-router-dom";
 import DesignModal from "./DesignModal";
 
-/* Footer links that open the same "Our story" / "Design" popups as the
-   homepage hero buttons. */
-const popups = { "Our story": "story", Design: "design" };
+/* "Our story" goes to the /our-story page; "Design" opens the same popup
+   as the homepage hero button. */
+const pages = { "Our story": "/our-story" };
+const popups = { Design: "design" };
 
 const columns = [
   {
@@ -17,7 +18,7 @@ const columns = [
 const payment = ["VISA", "MC", "AMEX", "APPLE PAY", "PAYPAL"];
 
 export default function Footer() {
-  const [open, setOpen] = useState(null); // "story" | "design" | null
+  const [open, setOpen] = useState(null); // "design" | null
 
   return (
     <>
@@ -48,7 +49,11 @@ export default function Footer() {
             <div className="footer__head">{col.head}</div>
             <div className="footer__links">
               {col.links.map((l) =>
-                popups[l] ? (
+                pages[l] ? (
+                  <Link key={l} to={pages[l]}>
+                    {l}
+                  </Link>
+                ) : popups[l] ? (
                   <a
                     key={l}
                     href={`#${popups[l]}`}
@@ -85,7 +90,6 @@ export default function Footer() {
     </footer>
 
     {/* Outside <footer> so the footer's text styles don't leak in. */}
-    {open === "story" && <StoryModal onClose={() => setOpen(null)} />}
     {open === "design" && <DesignModal onClose={() => setOpen(null)} />}
     </>
   );

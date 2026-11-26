@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useProducts } from "../context/ProductsContext";
 import { usePageContent } from "../context/PageContentContext";
 import ProductCard from "../components/ProductCard";
-import StoryModal from "../components/StoryModal";
 import DesignModal from "../components/DesignModal";
 import ShortsIcon from "../components/ShortsIcon";
+import RippleBackground from "../components/RippleBackground";
 
 /* SCRUM-8 — Store page.
    The main page: hero, product grid, sale row, help links. */
@@ -12,7 +13,7 @@ import ShortsIcon from "../components/ShortsIcon";
 export default function Store() {
   const { products } = useProducts();
   const { content } = usePageContent();
-  const [storyOpen, setStoryOpen] = useState(false);
+  const navigate = useNavigate();
   const [designOpen, setDesignOpen] = useState(false);
 
   /* The hero section is edited through the admin's "Main page edits"
@@ -117,7 +118,7 @@ export default function Store() {
                 fontSize: 13,
                 lineHeight: 1,
               }}
-              onClick={() => setStoryOpen(true)}
+              onClick={() => navigate("/our-story")}
             >
               {hero.secondaryLabel || "Our story"}
             </button>
@@ -127,8 +128,15 @@ export default function Store() {
 
       {/* ---------- FEATURED PRODUCT ---------- */}
       {featured && (
-        <section className="page" style={{ paddingBlock: 64 }}>
-          <div className="featured-card" style={{ maxWidth: 640, margin: "0 auto" }}>
+        <section
+          className="page"
+          style={{ paddingBlock: 64, position: "relative", background: "#E6F2FB" }}
+        >
+          <RippleBackground />
+          <div
+            className="featured-card"
+            style={{ maxWidth: 640, margin: "0 auto", position: "relative", zIndex: 1 }}
+          >
             <ProductCard product={featured} />
           </div>
         </section>
@@ -174,7 +182,6 @@ export default function Store() {
         </section>
       )}
 
-      {storyOpen && <StoryModal onClose={() => setStoryOpen(false)} />}
       {designOpen && <DesignModal onClose={() => setDesignOpen(false)} />}
     </>
   );
