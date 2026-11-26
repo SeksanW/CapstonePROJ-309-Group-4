@@ -1,8 +1,6 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { useProducts } from "../context/ProductsContext";
 import { usePageContent } from "../context/PageContentContext";
-import { money } from "../context/CartContext";
 import { helpLinks } from "../data/products";
 import ProductCard from "../components/ProductCard";
 import StoryModal from "../components/StoryModal";
@@ -10,8 +8,7 @@ import DesignModal from "../components/DesignModal";
 import ShortsIcon from "../components/ShortsIcon";
 
 /* SCRUM-8 — Store page.
-   The main page: hero, product grid, sale row,
-   collection story, bundle deal, help links. */
+   The main page: hero, product grid, sale row, help links. */
 
 export default function Store() {
   const { products } = useProducts();
@@ -19,11 +16,10 @@ export default function Store() {
   const [storyOpen, setStoryOpen] = useState(false);
   const [designOpen, setDesignOpen] = useState(false);
 
-  /* The hero and collection sections are edited through the admin's "Main
-     page edits" screen (GET /page-content) — not tied to any product, so
-     a product's photo should never end up here. */
+  /* The hero section is edited through the admin's "Main page edits"
+     screen (GET /page-content) — not tied to any product, so a
+     product's photo should never end up here. */
   const hero = content.hero ?? {};
-  const collection = content.collection ?? {};
 
   /* The API only returns live products; the filter stays as a guard. */
   const live = useMemo(
@@ -43,64 +39,51 @@ export default function Store() {
   return (
     <>
       {/* ---------- HERO ---------- */}
+      {/* Full-bleed photo behind the copy, like a magazine cover — not a
+          split layout. A bottom-up scrim keeps the overlaid text readable
+          over any photo. */}
       <section
         style={{
           position: "relative",
-          minHeight: 520,
-          background: "var(--surface-grey)",
+          minHeight: "88vh",
           display: "flex",
-          alignItems: "center",
+          alignItems: "flex-end",
           overflow: "hidden",
+          background: "var(--surface-grey)",
         }}
       >
+        {hero.image ? (
+          <img
+            src={hero.image}
+            alt=""
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        ) : (
+          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <ShortsIcon size={360} color="#DCDCD7" stroke={1.1} />
+          </div>
+        )}
+
         <div
           style={{
             position: "absolute",
             inset: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "flex-end",
-            paddingRight: hero.image ? 0 : 80,
+            background: "linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0) 60%)",
           }}
-        >
-          {hero.image ? (
-            <img
-              src={hero.image}
-              alt=""
-              style={{ width: "48%", height: "100%", objectFit: "cover" }}
-            />
-          ) : (
-            <ShortsIcon size={360} color="#DCDCD7" stroke={1.1} />
-          )}
-        </div>
+        />
 
         <div
           className="page"
-          style={{ position: "relative", maxWidth: 600, paddingBlock: 48 }}
+          style={{ position: "relative", maxWidth: 600, paddingBlock: 56, color: "#fff" }}
         >
-          <span
-            style={{
-              display: "inline-block",
-              background: "var(--brand-gradient)",
-              color: "#fff",
-              fontSize: 11,
-              fontWeight: 600,
-              letterSpacing: "0.1em",
-              padding: "6px 14px",
-              borderRadius: "var(--radius)",
-              marginBottom: 22,
-            }}
-          >
-            {hero.badge || "Koi Fish Series"}
-          </span>
-          <h1 className="h1" style={{ marginBottom: 20 }}>
+          <h1 className="h1" style={{ marginBottom: 20, color: "var(--brand-orange)" }}>
             {hero.heading || "Built for the ring. Made to last."}
           </h1>
           <p
             style={{
               fontSize: 16,
               lineHeight: 1.6,
-              color: "var(--ink-soft)",
+              color: "var(--brand-orange)",
               maxWidth: 400,
               marginBottom: 32,
             }}
@@ -108,11 +91,35 @@ export default function Store() {
             {hero.body ||
               "Hand-finished Muay Thai shorts with a four-way stretch panel and a waistband that stays put through every round."}
           </p>
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-            <button type="button" className="btn btn--grad" onClick={() => setDesignOpen(true)}>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <button
+              type="button"
+              className="btn"
+              style={{
+                background: "#fff",
+                color: "#000",
+                border: "2px solid var(--brand-orange)",
+                padding: "13px",
+                fontSize: 13,
+                lineHeight: 1,
+              }}
+              onClick={() => setDesignOpen(true)}
+            >
               {hero.primaryLabel || "Design"}
             </button>
-            <button type="button" className="btn btn--outline" onClick={() => setStoryOpen(true)}>
+            <button
+              type="button"
+              className="btn"
+              style={{
+                background: "#fff",
+                color: "#000",
+                border: "2px solid var(--brand-orange)",
+                padding: "13px",
+                fontSize: 13,
+                lineHeight: 1,
+              }}
+              onClick={() => setStoryOpen(true)}
+            >
               {hero.secondaryLabel || "Our story"}
             </button>
           </div>
@@ -122,31 +129,8 @@ export default function Store() {
       {/* ---------- FEATURED PRODUCT ---------- */}
       {featured && (
         <section className="page" style={{ paddingTop: 64 }}>
-          <div style={{ textAlign: "center", marginBottom: 28 }}>
-            <span className="eyebrow">Koi Fish Series</span>
-            <h2 className="h2" style={{ marginTop: 8 }}>
-              Pick your size
-            </h2>
-          </div>
           <div style={{ maxWidth: 320, margin: "0 auto" }}>
             <ProductCard product={featured} />
-          </div>
-        </section>
-      )}
-
-      {/* ---------- ALL PRODUCTS ---------- */}
-      {live.length > 0 && (
-        <section id="new" className="page" style={{ paddingTop: 64 }}>
-          <div style={{ textAlign: "center", marginBottom: 28 }}>
-            <span className="eyebrow">SHOP ALL</span>
-            <h2 className="h2" style={{ marginTop: 8 }}>
-              New arrivals
-            </h2>
-          </div>
-          <div className="grid grid--3">
-            {live.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
           </div>
         </section>
       )}
@@ -190,130 +174,6 @@ export default function Store() {
           </div>
         </section>
       )}
-
-      {/* ---------- COLLECTION STORY ---------- */}
-      <section id="collection" className="page" style={{ paddingBlock: 76 }}>
-        <div
-          className="panel"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1.1fr 1fr",
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              background: "var(--surface-grey)",
-              minHeight: 340,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            {collection.image ? (
-              <img
-                src={collection.image}
-                alt=""
-                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-              />
-            ) : (
-              <ShortsIcon size={150} stroke={1.3} />
-            )}
-          </div>
-          <div
-            style={{
-              padding: "48px 44px",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-            }}
-          >
-            <span className="eyebrow" style={{ marginBottom: 16 }}>
-              {collection.eyebrow || "THE COLLECTION"}
-            </span>
-            <h2
-              style={{
-                fontSize: "1.85rem",
-                fontWeight: 700,
-                letterSpacing: "-0.025em",
-                lineHeight: 1.12,
-                marginBottom: 16,
-              }}
-            >
-              {collection.heading || "Light, brightness and hope."}
-            </h2>
-            <p
-              style={{
-                fontSize: 14.5,
-                lineHeight: 1.68,
-                color: "var(--ink-soft)",
-                marginBottom: 26,
-              }}
-            >
-              {collection.body ||
-                "Natela takes its name from the Aramaic word for light. Every pair in the Flame series carries the gradient — a reminder that the work happens long before the fight."}
-            </p>
-            <a
-              href={collection.buttonLink || "#new"}
-              className="btn btn--dark"
-              style={{ alignSelf: "flex-start" }}
-            >
-              {collection.buttonLabel || "Explore the series"}
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* ---------- BUNDLE ---------- */}
-      <section className="page" style={{ paddingBottom: 76 }}>
-        <div
-          style={{
-            background: "var(--brand-gradient)",
-            borderRadius: "var(--radius-lg)",
-            padding: "38px 44px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 28,
-            flexWrap: "wrap",
-          }}
-        >
-          <div>
-            <div
-              style={{
-                fontSize: 11,
-                fontWeight: 600,
-                letterSpacing: "0.12em",
-                color: "rgba(255,255,255,0.85)",
-                marginBottom: 10,
-              }}
-            >
-              BUNDLE DEAL
-            </div>
-            <h3
-              style={{
-                fontSize: "1.5rem",
-                fontWeight: 700,
-                color: "#fff",
-                letterSpacing: "-0.02em",
-                marginBottom: 6,
-              }}
-            >
-              Any two pairs — save {money(30)}
-            </h3>
-            <p style={{ fontSize: 14, color: "rgba(255,255,255,0.9)" }}>
-              Mix any colours or sizes. Applied automatically in your cart.
-            </p>
-          </div>
-          <a
-            href="#new"
-            className="btn"
-            style={{ background: "#fff", color: "var(--ink)", whiteSpace: "nowrap" }}
-          >
-            Build your bundle
-          </a>
-        </div>
-      </section>
 
       {/* ---------- HELP ---------- */}
       <section id="help" className="page" style={{ paddingBottom: 72 }}>

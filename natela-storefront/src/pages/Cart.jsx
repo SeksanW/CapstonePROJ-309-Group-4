@@ -5,6 +5,7 @@ import { useProducts } from "../context/ProductsContext";
 import { useAuth, isSignInCancelled } from "../context/AuthContext";
 import { api } from "../lib/api";
 import ShortsIcon from "../components/ShortsIcon";
+import BuyAnotherSize from "../components/BuyAnotherSize";
 
 /* SCRUM-5 — Cart.
    Checkout works signed in (Google — the first sign-in creates the
@@ -181,12 +182,13 @@ export default function Cart() {
                     Remove
                   </button>
                 </div>
+                <BuyAnotherSize item={item} openDrawer={false} />
               </div>
             </div>
           ))}
 
-          <div style={{ borderTop: "1px solid var(--line)", paddingTop: 22 }}>
-            {totals.bundleDiscount > 0 ? (
+          {totals.bundleDiscount > 0 && (
+            <div style={{ borderTop: "1px solid var(--line)", paddingTop: 22 }}>
               <div className="notice">
                 <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--brand-red)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <polyline points="20 6 9 17 4 12" />
@@ -200,14 +202,8 @@ export default function Cart() {
                   </div>
                 </div>
               </div>
-            ) : (
-              <div className="notice" style={{ background: "#fff", borderColor: "var(--line)" }}>
-                <div style={{ fontSize: 13, color: "var(--ink-soft)" }}>
-                  Add one more pair to save {money(30)} with the bundle deal.
-                </div>
-              </div>
-            )}
-          </div>
+            </div>
+          )}
 
           <div style={{ marginTop: 26 }}>
             <Link to="/" style={{ fontSize: 13.5, fontWeight: 500, borderBottom: "1px solid var(--ink)" }}>

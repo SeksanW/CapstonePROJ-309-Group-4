@@ -35,12 +35,18 @@ export function CartProvider({ children }) {
   /* Kept in the browser so it survives a refresh and the trip to
      Stripe and back. Shoppers can fill it before signing in. */
   const [items, setItems] = useState(() => load(STORAGE_KEY, []));
+  // Slide-over cart preview, opened automatically whenever something is
+  // added — the standard "added to cart" pattern, instead of a button
+  // label that briefly changes to confirm it.
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
     save(STORAGE_KEY, items);
   }, [items]);
 
-  function addItem(product, size, qty = 1) {
+  /* `openDrawer: false` from the full cart page itself — popping the
+     drawer open there would just cover the cart it's already showing. */
+  function addItem(product, size, qty = 1, { openDrawer = true } = {}) {
     const key = lineKey(product.id, size);
     setItems((prev) => {
       const existing = prev.find((i) => i.key === key);
@@ -63,6 +69,7 @@ export function CartProvider({ children }) {
         },
       ];
     });
+    if (openDrawer) setDrawerOpen(true);
   }
 
   function removeItem(key) {
@@ -99,8 +106,17 @@ export function CartProvider({ children }) {
   }, [items]);
 
   const value = useMemo(
-    () => ({ items, addItem, removeItem, setQty, clear, totals }),
-    [items, totals]
+    () => ({
+      items,
+      addItem,
+      removeItem,
+      setQty,
+      clear,
+      totals,
+      drawerOpen,
+      closeDrawer: () => setDrawerOpen(false),
+    }),
+    [items, totals, drawerOpen]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

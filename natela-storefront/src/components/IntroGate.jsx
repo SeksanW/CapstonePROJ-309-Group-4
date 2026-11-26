@@ -38,8 +38,8 @@ function pillPixelSize() {
 
 export default function IntroGate() {
   const location = useLocation();
-  const { products, loading: productsLoading } = useProducts();
-  const { loading: contentLoading } = usePageContent();
+  const { loading: productsLoading } = useProducts();
+  const { content, loading: contentLoading } = usePageContent();
 
   const [active] = useState(() => location.pathname === "/");
   const [phase, setPhase] = useState("loading"); // loading | flowing | gate | exiting | done
@@ -64,7 +64,9 @@ export default function IntroGate() {
   const panelRh = pill.height / 2 / (window.innerHeight / 100);
 
   const dataReady = !productsLoading && !contentLoading;
-  const featuredImage = products.find((p) => p.status === "live" && p.image)?.image ?? null;
+  // Admin-set background for this screen (Page Content > Loading screen),
+  // not tied to any particular product.
+  const introImage = content.intro?.image ?? null;
 
   /* Minimum time the loading screen stays up, so a cached/instant fetch
      doesn't make it flash by. */
@@ -169,8 +171,8 @@ export default function IntroGate() {
   return (
     <>
       <div className={`intro-overlay${phase === "exiting" ? " intro-overlay--exiting" : ""}`}>
-        {featuredImage && (
-          <div className="intro-bg" style={{ backgroundImage: `url(${featuredImage})` }} />
+        {introImage && (
+          <div className="intro-bg" style={{ backgroundImage: `url(${introImage})` }} />
         )}
 
         {phase === "loading" ? (
