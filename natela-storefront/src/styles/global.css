@@ -9,6 +9,12 @@ body,
 #root {
   height: 100%;
 }
+/* Always keep room for the scrollbar, so pages don't shift sideways when
+   it appears/disappears: between long and short pages, and when the cart,
+   menu or a popup locks scrolling (which hides the scrollbar). */
+html {
+  scrollbar-gutter: stable;
+}
 body {
   margin: 0;
   font-family: var(--font);
