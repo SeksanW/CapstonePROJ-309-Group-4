@@ -10,7 +10,8 @@ export const OPEN_CONSENT_EVENT = "natela:open-consent";
 export default function ConsentBanner() {
   const [open, setOpen] = useState(() => Boolean(GA_ID) && !getConsent());
 
-  // A returning shopper who already accepted: load GA straight away.
+  // Load the Google tag on every visit (Consent Mode): no cookies until the
+  // shopper accepts; a returning shopper who already accepted is granted.
   useEffect(() => {
     loadGA();
   }, []);
