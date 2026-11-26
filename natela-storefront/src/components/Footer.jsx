@@ -1,15 +1,26 @@
+import { useState } from "react";
+import StoryModal from "./StoryModal";
+import DesignModal from "./DesignModal";
+
+/* Footer links that open the same "Our story" / "Design" popups as the
+   homepage hero buttons. */
+const popups = { "Our story": "story", Design: "design" };
+
 const columns = [
   {
     head: "SHOP",
     links: ["All shorts", "New arrivals", "On sale", "Bundles"],
   },
-  { head: "BRAND", links: ["Our story", "Contact", "Instagram"] },
+  { head: "BRAND", links: ["Our story", "Design", "Contact", "Instagram"] },
 ];
 
 const payment = ["VISA", "MC", "AMEX", "APPLE PAY", "PAYPAL"];
 
 export default function Footer() {
+  const [open, setOpen] = useState(null); // "story" | "design" | null
+
   return (
+    <>
     <footer className="footer">
       <div className="footer__grid">
         <div>
@@ -36,11 +47,25 @@ export default function Footer() {
           <div key={col.head}>
             <div className="footer__head">{col.head}</div>
             <div className="footer__links">
-              {col.links.map((l) => (
-                <a key={l} href="#help">
-                  {l}
-                </a>
-              ))}
+              {col.links.map((l) =>
+                popups[l] ? (
+                  <a
+                    key={l}
+                    href={`#${popups[l]}`}
+                    role="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setOpen(popups[l]);
+                    }}
+                  >
+                    {l}
+                  </a>
+                ) : (
+                  <a key={l} href="#help">
+                    {l}
+                  </a>
+                )
+              )}
             </div>
           </div>
         ))}
@@ -58,5 +83,10 @@ export default function Footer() {
         </div>
       </div>
     </footer>
+
+    {/* Outside <footer> so the footer's text styles don't leak in. */}
+    {open === "story" && <StoryModal onClose={() => setOpen(null)} />}
+    {open === "design" && <DesignModal onClose={() => setOpen(null)} />}
+    </>
   );
 }
