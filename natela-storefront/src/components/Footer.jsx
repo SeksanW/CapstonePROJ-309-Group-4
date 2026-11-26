@@ -1,14 +1,35 @@
+import { useLocation, useNavigate } from "react-router-dom";
+
+/* Footer links that jump to the homepage's "Our story" / "Design"
+   sections (#story, #design), from any page. */
+const sections = { "Our story": "story", Design: "design" };
+
 const columns = [
   {
     head: "SHOP",
     links: ["All shorts", "New arrivals", "On sale", "Bundles"],
   },
-  { head: "BRAND", links: ["Our story", "Contact", "Instagram"] },
+  { head: "BRAND", links: ["Our story", "Design", "Contact", "Instagram"] },
 ];
 
 const payment = ["VISA", "MC", "AMEX", "APPLE PAY", "PAYPAL"];
 
 export default function Footer() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  function goTo(id) {
+    if (location.pathname !== "/") navigate("/");
+    // The homepage may still be rendering after navigating; retry briefly.
+    let tries = 0;
+    const scroll = () => {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      else if (tries++ < 30) requestAnimationFrame(scroll);
+    };
+    requestAnimationFrame(scroll);
+  }
+
   return (
     <footer className="footer">
       <div className="footer__grid">
@@ -36,11 +57,24 @@ export default function Footer() {
           <div key={col.head}>
             <div className="footer__head">{col.head}</div>
             <div className="footer__links">
-              {col.links.map((l) => (
-                <a key={l} href="#help">
-                  {l}
-                </a>
-              ))}
+              {col.links.map((l) =>
+                sections[l] ? (
+                  <a
+                    key={l}
+                    href={`/#${sections[l]}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      goTo(sections[l]);
+                    }}
+                  >
+                    {l}
+                  </a>
+                ) : (
+                  <a key={l} href="#help">
+                    {l}
+                  </a>
+                )
+              )}
             </div>
           </div>
         ))}
