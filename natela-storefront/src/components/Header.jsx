@@ -2,9 +2,10 @@ import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useAuth, isSignInCancelled } from "../context/AuthContext";
 
-/* Site header. The logo is a Poppins stand-in for the real
-   wordmark — swap in the supplied logo file before the client
-   sees this. Their guidelines forbid redrawing or distorting it. */
+/* Site header, with the official Natela Fit primary logo
+   (public/images/natela-logo.png). The brand guidelines forbid
+   redrawing, recolouring or distorting it, and the colour logo may only
+   sit on black or white, so the header stays white. */
 
 export default function Header() {
   const { totals } = useCart();
@@ -23,19 +24,8 @@ export default function Header() {
   return (
     <>
       <header className="header">
-        <Link to="/" aria-label="Natela Fit home" style={{ display: "flex", gap: 3 }}>
-          <span className="logo">NATELA</span>
-          <span
-            style={{
-              fontSize: 8,
-              fontWeight: 600,
-              color: "#999",
-              alignSelf: "flex-start",
-              marginTop: 4,
-            }}
-          >
-            ™
-          </span>
+        <Link to="/" aria-label="Natela Fit home" style={{ display: "flex" }}>
+          <img src="/images/natela-logo.png" alt="Natela Fit" className="brand-logo" />
         </Link>
 
         <div className="header__tools">

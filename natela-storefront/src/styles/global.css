@@ -95,10 +95,10 @@ p {
 }
 
 /* ---------- logo ---------- */
-/* The header still uses this Poppins stand-in for the real wordmark —
-   swap it in before the client sees this. Their guidelines forbid
-   redrawing or distorting it. The footer and intro use the real logo
-   image instead (.brand-logo), since it reproduces cleanly at that size. */
+/* The header, footer and intro all use the official logo image
+   (.brand-logo, public/images/natela-logo.png). .logo is a text style
+   kept only for small text wordmarks; the guidelines forbid redrawing
+   or distorting the real logo. */
 .logo {
   font-weight: 700;
   font-style: italic;
