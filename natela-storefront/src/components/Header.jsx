@@ -6,8 +6,8 @@ import { CURRENCIES, useCurrency } from "../context/CurrencyContext";
 
 /* Site header: menu on the left, logo centred, tools on the right. It
    stays pinned to the top while scrolling (.header is sticky). The logo
-   is a Poppins stand-in for the real wordmark — swap in the supplied
-   logo file before the client sees this. Their guidelines forbid
+   is the official Natela Fit primary logo
+   (public/images/natela-logo.png); the brand guidelines forbid
    redrawing or distorting it. */
 
 /* Menu entries. `home` goes to the top of the storefront; `section`
@@ -98,18 +98,7 @@ export default function Header() {
         </button>
 
         <Link to="/" aria-label="Natela Fit home" className="header__logo">
-          <span className="logo">NATELA</span>
-          <span
-            style={{
-              fontSize: 8,
-              fontWeight: 600,
-              color: "#999",
-              alignSelf: "flex-start",
-              marginTop: 4,
-            }}
-          >
-            ™
-          </span>
+          <img src="/images/natela-logo.png" alt="Natela Fit" className="brand-logo" />
         </Link>
 
         <div className="header__tools">
@@ -157,7 +146,7 @@ export default function Header() {
         inert={menuOpen ? undefined : ""}
       >
         <div className="menu-drawer__top">
-          <span className="logo logo--sm">NATELA</span>
+          <img src="/images/natela-logo.png" alt="Natela Fit" className="brand-logo brand-logo--sm" />
           <button type="button" className="menu-drawer__close" aria-label="Close menu" onClick={() => setMenuOpen(false)}>
             ×
           </button>

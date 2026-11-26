@@ -58,7 +58,7 @@ export default function CartDrawer() {
       >
         {/* NATELA, a line, "Cart", a line, then the items. */}
         <div className="cart-drawer__head cart-drawer__flow" style={{ "--i": 0 }}>
-          <span className="logo logo--sm">NATELA</span>
+          <img src="/images/natela-logo.png" alt="Natela Fit" className="brand-logo brand-logo--sm" />
           <button type="button" className="cart-drawer__close" onClick={closeDrawer} aria-label="Close">
             ×
           </button>
