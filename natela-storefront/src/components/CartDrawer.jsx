@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useCart, money } from "../context/CartContext";
 import ShortsIcon from "./ShortsIcon";
@@ -6,10 +6,30 @@ import BuyAnotherSize from "./BuyAnotherSize";
 
 /* The slide-over cart preview that opens automatically whenever something
    is added to the cart (see CartContext's addItem). "Checkout" below just
-   hands off to the full /cart page, where payment actually happens. */
+   hands off to the full /cart page, where payment actually happens.
+
+   Motion: the backdrop fades and the panel glides in, then its contents
+   flow into place one after another (header, each item, footer — the
+   order comes from --i). Closing plays it in reverse before unmounting. */
+
+const LEAVE_MS = 260; // keep in step with .cart-drawer--leaving in global.css
 
 export default function CartDrawer() {
   const { items, totals, drawerOpen, closeDrawer, setQty, removeItem } = useCart();
+  // Stay mounted for the exit animation after the cart says "closed".
+  const [shown, setShown] = useState(drawerOpen);
+  const leaving = shown && !drawerOpen;
+
+  useEffect(() => {
+    if (drawerOpen) {
+      setShown(true);
+      return;
+    }
+    if (!shown) return;
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    const t = setTimeout(() => setShown(false), reduce ? 0 : LEAVE_MS);
+    return () => clearTimeout(t);
+  }, [drawerOpen, shown]);
 
   useEffect(() => {
     if (!drawerOpen) return;
@@ -23,34 +43,36 @@ export default function CartDrawer() {
     };
   }, [drawerOpen, closeDrawer]);
 
-  if (!drawerOpen) return null;
+  if (!shown) return null;
 
   return (
-    <div className="cart-drawer-overlay" onClick={closeDrawer}>
+    <div className={`cart-drawer-overlay${leaving ? " cart-drawer--leaving" : ""}`} onClick={closeDrawer}>
       <div
         className="cart-drawer"
         role="dialog"
         aria-modal="true"
-        aria-label="Your cart"
+        aria-label="Cart"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="cart-drawer__head">
-          <h2 className="h3" style={{ marginBottom: 0 }}>
-            Your cart
-          </h2>
+        {/* NATELA, a line, "Cart", a line, then the items. */}
+        <div className="cart-drawer__head cart-drawer__flow" style={{ "--i": 0 }}>
+          <span className="logo logo--sm">NATELA</span>
           <button type="button" className="cart-drawer__close" onClick={closeDrawer} aria-label="Close">
             ×
           </button>
         </div>
+        <div className="cart-drawer__title cart-drawer__flow" style={{ "--i": 1 }}>
+          <h2 className="h3">Cart</h2>
+        </div>
 
         <div className="cart-drawer__items">
           {items.length === 0 ? (
-            <p className="muted" style={{ padding: "32px 0", textAlign: "center" }}>
+            <p className="muted cart-drawer__flow" style={{ padding: "32px 0", textAlign: "center", "--i": 2 }}>
               Your cart is empty.
             </p>
           ) : (
-            items.map((item) => (
-              <div key={item.key} className="cart-item" style={{ padding: "16px 0" }}>
+            items.map((item, i) => (
+              <div key={item.key} className="cart-item cart-drawer__flow" style={{ padding: "16px 0", "--i": i + 2 }}>
                 <div className="cart-thumb" style={{ width: 72, height: 86 }}>
                   {item.image ? (
                     <img src={item.image} alt={item.name} />
@@ -107,7 +129,7 @@ export default function CartDrawer() {
         </div>
 
         {items.length > 0 && (
-          <div className="cart-drawer__footer">
+          <div className="cart-drawer__footer cart-drawer__flow" style={{ "--i": items.length + 2 }}>
             <div
               style={{
                 display: "flex",

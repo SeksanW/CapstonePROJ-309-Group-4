@@ -7,7 +7,7 @@ import { useAuth, isSignInCancelled } from "../context/AuthContext";
    sees this. Their guidelines forbid redrawing or distorting it. */
 
 export default function Header() {
-  const { totals } = useCart();
+  const { totals, openDrawer } = useCart();
   const { user, signIn, signOut } = useAuth();
 
   function handleAccountClick() {
@@ -46,13 +46,21 @@ export default function Header() {
             </svg>
           </div>
 
-          <Link to="/cart" className="cart-link" aria-label={`Cart, ${totals.count} items`}>
+          {/* Opens the slide-in cart (CartDrawer); its Checkout button goes
+              on to the full cart page. */}
+          <button
+            type="button"
+            className="cart-link"
+            aria-label={`Open cart, ${totals.count} items`}
+            aria-haspopup="dialog"
+            onClick={openDrawer}
+          >
             <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M6 8h12l-1 12H7L6 8z" />
               <path d="M9 8V6a3 3 0 0 1 6 0v2" />
             </svg>
             {totals.count > 0 && <span className="cart-count">{totals.count}</span>}
-          </Link>
+          </button>
 
           <button
             aria-label={user ? `Sign out (${user.email})` : "Sign in"}
