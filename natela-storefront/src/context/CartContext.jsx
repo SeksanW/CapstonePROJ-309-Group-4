@@ -42,7 +42,7 @@ export function CartProvider({ children }) {
   }, [items]);
 
   function addItem(product, size, qty = 1) {
-    track("add_to_cart", { productId: product.id });
+    track("add_to_cart", { productId: product.id, name: product.name, price: product.price, value: product.price * qty });
     const key = lineKey(product.id, size);
     setItems((prev) => {
       const existing = prev.find((i) => i.key === key);

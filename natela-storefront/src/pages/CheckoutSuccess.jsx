@@ -32,7 +32,7 @@ export default function CheckoutSuccess() {
         setOrder(result);
         if (result.status === "paid") {
           clear();
-          track("checkout_paid", { orderId: result.id });
+          track("checkout_paid", { orderId: result.id, value: result.totals?.total });
         }
       })
       .catch((err) => {

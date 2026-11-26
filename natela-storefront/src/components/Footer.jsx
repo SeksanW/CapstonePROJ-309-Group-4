@@ -1,3 +1,5 @@
+import { GA_ID } from "../lib/ga";
+import { OPEN_CONSENT_EVENT } from "./ConsentBanner";
 import { useState } from "react";
 import StoryModal from "./StoryModal";
 import DesignModal from "./DesignModal";
@@ -72,7 +74,17 @@ export default function Footer() {
       </div>
 
       <div className="footer__bottom">
-        <span>© 2026 Natela Fit. All rights reserved.</span>
+        <span>
+          © 2026 Natela Fit. All rights reserved.
+          {GA_ID && (
+            <>
+              {" · "}
+              <button type="button" className="footer__link-btn" onClick={() => window.dispatchEvent(new Event(OPEN_CONSENT_EVENT))}>
+                Cookie settings
+              </button>
+            </>
+          )}
+        </span>
         <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
           <span>We accept</span>
           {payment.map((p) => (

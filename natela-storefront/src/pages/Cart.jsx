@@ -59,7 +59,7 @@ export default function Cart() {
           analyticsSessionId: visitId(),
         },
       });
-      track("checkout_start", { orderId });
+      track("checkout_start", { orderId, value: totals.total });
       window.location.assign(url); // Stripe's payment page
     } catch (err) {
       setCheckoutError(err);

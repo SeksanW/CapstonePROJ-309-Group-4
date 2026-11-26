@@ -4,6 +4,7 @@ import { track } from "./lib/analytics";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import ChatWidget from "./components/ChatWidget";
+import ConsentBanner from "./components/ConsentBanner";
 import IntroGate from "./components/IntroGate";
 import Store from "./pages/Store";
 import Cart from "./pages/Cart";
@@ -29,6 +30,7 @@ function StoreLayout() {
       </main>
       <Footer />
       <ChatWidget />
+      <ConsentBanner />
       <IntroGate />
     </div>
   );
