@@ -15,7 +15,6 @@ const columns = [
   { head: "BRAND", links: ["Our story", "Design", "Contact", "Instagram"] },
 ];
 
-const payment = ["VISA", "MC", "AMEX", "APPLE PAY", "PAYPAL"];
 
 export default function Footer() {
   const [open, setOpen] = useState(null); // "design" | null
@@ -76,17 +75,6 @@ export default function Footer() {
         ))}
       </div>
 
-      <div className="footer__bottom">
-        <span>© 2026 Natela Fit. All rights reserved.</span>
-        <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-          <span>We accept</span>
-          {payment.map((p) => (
-            <span key={p} className="paychip">
-              {p}
-            </span>
-          ))}
-        </div>
-      </div>
     </footer>
 
     {/* Outside <footer> so the footer's text styles don't leak in. */}
