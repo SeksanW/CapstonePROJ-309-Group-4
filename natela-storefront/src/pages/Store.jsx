@@ -2,27 +2,24 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useProducts } from "../context/ProductsContext";
 import { usePageContent } from "../context/PageContentContext";
-import { money } from "../context/CartContext";
+import { useCurrency } from "../context/CurrencyContext";
+import { BUNDLE_DEAL_ENABLED } from "../context/CartContext";
 import ProductCard from "../components/ProductCard";
-import StoryModal from "../components/StoryModal";
-import DesignModal from "../components/DesignModal";
 import ShortsIcon from "../components/ShortsIcon";
 
 /* SCRUM-8 — Store page.
-   The main page: hero, product grid, sale row,
-   collection story, bundle deal, help links. */
+   The main page: hero, product grid, sale row, bundle deal (when on). */
 
 export default function Store() {
   const { products } = useProducts();
   const { content } = usePageContent();
-  const [storyOpen, setStoryOpen] = useState(false);
-  const [designOpen, setDesignOpen] = useState(false);
+  const { money } = useCurrency();
+  const [productsOpen, setProductsOpen] = useState(true);
 
-  /* The hero and collection sections are edited through the admin's "Main
+  /* The hero section is edited through the admin's "Main
      page edits" screen (GET /page-content) — not tied to any product, so
      a product's photo should never end up here. */
   const hero = content.hero ?? {};
-  const collection = content.collection ?? {};
 
   /* The API only returns live products; the filter stays as a guard. */
   const live = useMemo(
@@ -35,117 +32,128 @@ export default function Store() {
     [live]
   );
 
-  /* The featured product below the hero is the only spot that's
-     deliberately tied to a real product, not page content. */
-  const featured = live[0] ?? null;
+  /* "Latest release": the two newest live products (newest first). */
+  const latest = useMemo(
+    () =>
+      [...live]
+        .sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")) || b.id - a.id)
+        .slice(0, 2),
+    [live]
+  );
 
   return (
-    <>
+    // Light grey page background below the hero (the hero fades into it).
+    <div style={{ background: "var(--surface-grey)" }}>
       {/* ---------- HERO ---------- */}
+      {/* Just the hero photo, full width. No text or buttons — "Our story"
+          and "Design" live in the header menu and the footer. */}
       <section
         style={{
           position: "relative",
+          // Fills the first screen under the announcement bar and header.
+          height: "calc(100vh - var(--topbar-h) - var(--header-h))",
           minHeight: 520,
           background: "var(--surface-grey)",
           display: "flex",
           alignItems: "center",
+          justifyContent: "center",
           overflow: "hidden",
         }}
       >
+        {hero.image ? (
+          <img
+            src={hero.image}
+            alt=""
+            style={{
+              /* Hard top edge: the banner always starts at a fixed line on
+                 the photo (34.7% down — just above the koi, below the
+                 waistband), shifted up by that much of its own height.
+                 It's at least full width; on tall/narrow screens it widens
+                 so the part below the line still fills the banner (the
+                 1.532 is 1 / (1 - 0.347) for this square photo). Tuned for
+                 the current hero photo; retune if the admin uploads
+                 a different one. */
+              position: "absolute",
+              top: 0,
+              left: "50%",
+              width: "max(100%, calc(max(100vh - var(--header-h), 520px) * 1.532))",
+              height: "auto",
+              maxWidth: "none",
+              transform: "translate(-50%, -34.7%)",
+            }}
+          />
+        ) : (
+          <ShortsIcon size={360} color="#DCDCD7" stroke={1.1} />
+        )}
+        {/* Fades the bottom of the photo into the light grey page below, starting
+            at the koi's tail. Eased stops (slow start, fast finish) so the
+            fade has no visible start line; it runs 1px past the edge so no
+            seam shows against the page. */}
         <div
+          aria-hidden="true"
           style={{
             position: "absolute",
-            inset: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "flex-end",
-            paddingRight: hero.image ? 0 : 80,
+            left: 0,
+            right: 0,
+            bottom: -1,
+            height: "18%",
+            background:
+              "linear-gradient(to bottom, rgba(244,244,241,0) 0%, rgba(244,244,241,0.04) 15%, rgba(244,244,241,0.13) 30%, rgba(244,244,241,0.28) 45%, rgba(244,244,241,0.47) 60%, rgba(244,244,241,0.69) 75%, rgba(244,244,241,0.88) 88%, var(--surface-grey) 100%)",
+            pointerEvents: "none",
           }}
-        >
-          {hero.image ? (
-            <img
-              src={hero.image}
-              alt=""
-              style={{ width: "48%", height: "100%", objectFit: "cover" }}
-            />
-          ) : (
-            <ShortsIcon size={360} color="#DCDCD7" stroke={1.1} />
-          )}
-        </div>
-
-        <div
-          className="page"
-          style={{ position: "relative", maxWidth: 600, paddingBlock: 48 }}
-        >
-          <span
-            style={{
-              display: "inline-block",
-              background: "var(--brand-gradient)",
-              color: "#fff",
-              fontSize: 11,
-              fontWeight: 600,
-              letterSpacing: "0.1em",
-              padding: "6px 14px",
-              borderRadius: "var(--radius)",
-              marginBottom: 22,
-            }}
-          >
-            {hero.badge || "Koi Fish Series"}
-          </span>
-          <h1 className="h1" style={{ marginBottom: 20 }}>
-            {hero.heading || "Built for the ring. Made to last."}
-          </h1>
-          <p
-            style={{
-              fontSize: 16,
-              lineHeight: 1.6,
-              color: "var(--ink-soft)",
-              maxWidth: 400,
-              marginBottom: 32,
-            }}
-          >
-            {hero.body ||
-              "Hand-finished Muay Thai shorts with a four-way stretch panel and a waistband that stays put through every round."}
-          </p>
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-            <button type="button" className="btn btn--grad" onClick={() => setDesignOpen(true)}>
-              {hero.primaryLabel || "Design"}
-            </button>
-            <button type="button" className="btn btn--outline" onClick={() => setStoryOpen(true)}>
-              {hero.secondaryLabel || "Our story"}
-            </button>
+        />
+        {/* Text in the fade at the bottom of the photo — the "Heading" and
+            "Body text" from the admin's Main page edits → Hero banner.
+            Leave both empty there to show nothing. */}
+        {(hero.heading || hero.body) && (
+          <div className="hero-caption">
+            {hero.heading && <h1 className="hero-caption__heading">{hero.heading}</h1>}
+            {hero.body && <p className="hero-caption__body">{hero.body}</p>}
           </div>
-        </div>
+        )}
       </section>
 
-      {/* ---------- FEATURED PRODUCT ---------- */}
-      {featured && (
-        <section className="page" style={{ paddingTop: 64 }}>
-          <div style={{ textAlign: "center", marginBottom: 28 }}>
-            <span className="eyebrow">Koi Fish Series</span>
-            <h2 className="h2" style={{ marginTop: 8 }}>
-              Pick your size
-            </h2>
-          </div>
-          <div style={{ maxWidth: 320, margin: "0 auto" }}>
-            <ProductCard product={featured} />
+      {/* ---------- LATEST RELEASE ---------- */}
+      {/* The two newest products, side by side (one on its own is centred at
+          the same size). Older ones are in the full grid below. */}
+      {latest.length > 0 && (
+        <section id="latest" className="page latest">
+          <h2 className="latest__title">Latest release</h2>
+          <div className="latest__grid">
+            {latest.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
           </div>
         </section>
       )}
 
       {/* ---------- ALL PRODUCTS ---------- */}
+      {/* "Products" title like "Latest release"; click it to collapse or
+          expand the grid (starts open). */}
       {live.length > 0 && (
-        <section id="new" className="page" style={{ paddingTop: 64 }}>
-          <div style={{ textAlign: "center", marginBottom: 28 }}>
-            <span className="eyebrow">SHOP ALL</span>
-            <h2 className="h2" style={{ marginTop: 8 }}>
-              New arrivals
-            </h2>
-          </div>
-          <div className="grid grid--3">
-            {live.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
+        <section id="new" className="page products">
+          <h2 className="latest__title">
+            <button
+              type="button"
+              className="products__toggle"
+              aria-expanded={productsOpen}
+              aria-controls="products-grid"
+              onClick={() => setProductsOpen((o) => !o)}
+            >
+              Products
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+          </h2>
+          <div id="products-grid" className={`products__collapse${productsOpen ? " is-open" : ""}`}>
+            <div className="products__inner" inert={productsOpen ? undefined : ""}>
+              <div className="grid grid--3">
+                {live.map((p) => (
+                  <ProductCard key={p.id} product={p} />
+                ))}
+              </div>
+            </div>
           </div>
         </section>
       )}
@@ -190,80 +198,9 @@ export default function Store() {
         </section>
       )}
 
-      {/* ---------- COLLECTION STORY ---------- */}
-      <section id="collection" className="page" style={{ paddingBlock: 76 }}>
-        <div
-          className="panel"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1.1fr 1fr",
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              background: "var(--surface-grey)",
-              minHeight: 340,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            {collection.image ? (
-              <img
-                src={collection.image}
-                alt=""
-                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-              />
-            ) : (
-              <ShortsIcon size={150} stroke={1.3} />
-            )}
-          </div>
-          <div
-            style={{
-              padding: "48px 44px",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-            }}
-          >
-            <span className="eyebrow" style={{ marginBottom: 16 }}>
-              {collection.eyebrow || "THE COLLECTION"}
-            </span>
-            <h2
-              style={{
-                fontSize: "1.85rem",
-                fontWeight: 700,
-                letterSpacing: "-0.025em",
-                lineHeight: 1.12,
-                marginBottom: 16,
-              }}
-            >
-              {collection.heading || "Light, brightness and hope."}
-            </h2>
-            <p
-              style={{
-                fontSize: 14.5,
-                lineHeight: 1.68,
-                color: "var(--ink-soft)",
-                marginBottom: 26,
-              }}
-            >
-              {collection.body ||
-                "Natela takes its name from the Aramaic word for light. Every pair in the Flame series carries the gradient — a reminder that the work happens long before the fight."}
-            </p>
-            <a
-              href={collection.buttonLink || "#new"}
-              className="btn btn--dark"
-              style={{ alignSelf: "flex-start" }}
-            >
-              {collection.buttonLabel || "Explore the series"}
-            </a>
-          </div>
-        </div>
-      </section>
-
       {/* ---------- BUNDLE ---------- */}
+      {/* Hidden while the bundle deal is switched off (CartContext). */}
+      {BUNDLE_DEAL_ENABLED && (
       <section className="page" style={{ paddingBottom: 76 }}>
         <div
           style={{
@@ -313,9 +250,7 @@ export default function Store() {
           </a>
         </div>
       </section>
-
-      {storyOpen && <StoryModal onClose={() => setStoryOpen(false)} />}
-      {designOpen && <DesignModal onClose={() => setDesignOpen(false)} />}
-    </>
+      )}
+    </div>
   );
 }

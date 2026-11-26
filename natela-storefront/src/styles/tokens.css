@@ -45,7 +45,12 @@
   --radius: 2px;
   --radius-lg: 3px;
   --page-pad: 56px;
-  --font: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --header-h: 56px; /* site header: a little taller than the NATELA logo */
+  --topbar-h: 36px; /* announcement bar above the header */
+  /* Brand typeface: Poppins (SemiBold for headings). The guidelines'
+     approved substitutes come next, in case Poppins fails to load. */
+  --font: "Poppins", "Montserrat", "Roboto", "Avant Garde", "ITC Avant Garde Gothic", system-ui,
+    -apple-system, "Segoe UI", sans-serif;
 }
 
 @media (max-width: 720px) {

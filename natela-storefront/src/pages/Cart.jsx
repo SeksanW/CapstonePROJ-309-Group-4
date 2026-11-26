@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useCart, money, MAX_QTY_PER_LINE } from "../context/CartContext";
+import { useCart, money as moneyCad, MAX_QTY_PER_LINE, BUNDLE_DEAL_ENABLED } from "../context/CartContext";
+import { useCurrency } from "../context/CurrencyContext";
 import { useProducts } from "../context/ProductsContext";
 import { useAuth, isSignInCancelled } from "../context/AuthContext";
 import { api } from "../lib/api";
@@ -29,6 +30,7 @@ function describeProblem(problem, items) {
 
 export default function Cart() {
   const { items, removeItem, setQty, totals } = useCart();
+  const { money, currency } = useCurrency();
   const { products } = useProducts();
   const { user, ready, signIn } = useAuth();
   const [checkingOut, setCheckingOut] = useState(false);
@@ -185,6 +187,8 @@ export default function Cart() {
             </div>
           ))}
 
+          {/* Bundle deal messages — hidden while the deal is switched off. */}
+          {BUNDLE_DEAL_ENABLED && (
           <div style={{ borderTop: "1px solid var(--line)", paddingTop: 22 }}>
             {totals.bundleDiscount > 0 ? (
               <div className="notice">
@@ -208,6 +212,7 @@ export default function Cart() {
               </div>
             )}
           </div>
+          )}
 
           <div style={{ marginTop: 26 }}>
             <Link to="/" style={{ fontSize: 13.5, fontWeight: 500, borderBottom: "1px solid var(--ink)" }}>
@@ -268,7 +273,9 @@ export default function Cart() {
               </span>
             </div>
             <div style={{ fontSize: 12, color: "var(--ink-faint)", marginBottom: 24 }}>
-              Canadian dollars · duties calculated at checkout
+              {currency === "CAD"
+                ? "Canadian dollars · duties calculated at checkout"
+                : `Approximate ${currency} prices. You'll be charged ${moneyCad(totals.total)} CAD at checkout · duties calculated at checkout`}
             </div>
 
             {checkoutError && (
