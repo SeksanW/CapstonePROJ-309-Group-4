@@ -4,6 +4,7 @@ import { useCart, money, MAX_QTY_PER_LINE } from "../context/CartContext";
 import { useProducts } from "../context/ProductsContext";
 import { useAuth, isSignInCancelled } from "../context/AuthContext";
 import { api } from "../lib/api";
+import { track, visitId } from "../lib/analytics";
 import ShortsIcon from "../components/ShortsIcon";
 
 /* SCRUM-5 — Cart.
@@ -40,19 +41,25 @@ export default function Cart() {
      the shopper changes it. */
   useEffect(() => setCheckoutError(null), [items]);
 
+  useEffect(() => {
+    track("cart_view");
+  }, []);
+
   async function proceedToCheckout() {
     setCheckoutError(null);
     setCheckingOut(true);
     try {
       const token = user ? await user.getIdToken() : undefined;
-      const { url } = await api("/orders/checkout", {
+      const { url, orderId } = await api("/orders/checkout", {
         method: "POST",
         token,
         body: {
           items: items.map(({ productId, size, qty }) => ({ productId, size, qty })),
           ...(!user && { guestEmail: guestEmail.trim() }),
+          analyticsSessionId: visitId(),
         },
       });
+      track("checkout_start", { orderId });
       window.location.assign(url); // Stripe's payment page
     } catch (err) {
       setCheckoutError(err);

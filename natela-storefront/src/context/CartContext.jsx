@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { load, save } from "../lib/localStore";
+import { track } from "../lib/analytics";
 
 const STORAGE_KEY = "natela.cart";
 
@@ -41,6 +42,7 @@ export function CartProvider({ children }) {
   }, [items]);
 
   function addItem(product, size, qty = 1) {
+    track("add_to_cart", { productId: product.id });
     const key = lineKey(product.id, size);
     setItems((prev) => {
       const existing = prev.find((i) => i.key === key);

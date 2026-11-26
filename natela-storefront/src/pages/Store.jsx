@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useProducts } from "../context/ProductsContext";
 import { usePageContent } from "../context/PageContentContext";
@@ -7,12 +7,16 @@ import ProductCard from "../components/ProductCard";
 import StoryModal from "../components/StoryModal";
 import DesignModal from "../components/DesignModal";
 import ShortsIcon from "../components/ShortsIcon";
+import { track } from "../lib/analytics";
 
 /* SCRUM-8 — Store page.
    The main page: hero, product grid, sale row,
    collection story, bundle deal, help links. */
 
 export default function Store() {
+  useEffect(() => {
+    track("store_view");
+  }, []);
   const { products } = useProducts();
   const { content } = usePageContent();
   const [storyOpen, setStoryOpen] = useState(false);

@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { useCart, money } from "../context/CartContext";
 import { useAuth, isSignInCancelled } from "../context/AuthContext";
 import { api } from "../lib/api";
+import { track } from "../lib/analytics";
 
 /* Stripe sends the shopper here after paying, with ?session_id=cs_...
    order-service checks the payment with Stripe and marks the order
@@ -29,7 +30,10 @@ export default function CheckoutSuccess() {
       .then((result) => {
         if (cancelled) return;
         setOrder(result);
-        if (result.status === "paid") clear();
+        if (result.status === "paid") {
+          clear();
+          track("checkout_paid", { orderId: result.id });
+        }
       })
       .catch((err) => {
         if (!cancelled) setError(err.message);

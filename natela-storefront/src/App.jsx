@@ -1,4 +1,6 @@
-import { Routes, Route, Outlet } from "react-router-dom";
+import { useEffect } from "react";
+import { Routes, Route, Outlet, useLocation } from "react-router-dom";
+import { track } from "./lib/analytics";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import ChatWidget from "./components/ChatWidget";
@@ -13,6 +15,12 @@ import CheckoutSuccess from "./pages/CheckoutSuccess";
    of the way for good. */
 
 function StoreLayout() {
+  // Anonymous analytics: which page each visit is on (where they leave).
+  const { pathname } = useLocation();
+  useEffect(() => {
+    track("page_view");
+  }, [pathname]);
+
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100%" }}>
       <Header />
