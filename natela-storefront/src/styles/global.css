@@ -1037,36 +1037,34 @@ tbody tr:hover {
   position: fixed;
   inset: 0;
   z-index: 1200;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--brand-black);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 24px;
 }
-/* The koi fabric print lives on the dimmed backdrop, outside the panel —
-   not inside it. Sized and centered to match the panel itself (not the
-   full viewport height), filling the strip completely (`cover`, so there's
-   no empty backdrop showing through inside the strip itself) and widened
-   to nearly touch the panel's edge — the only gap is the couple of px
-   between the koi and the panel, not at the outer viewport edge. The
-   source image (koi-fabric.jpg) is pre-cropped so the design's own centre
-   sits at the image's centre, matching this strip's ~0.56 aspect ratio, so
-   `cover` only has to trim the edges, not the design itself. */
+/* The koi fabric print fills each side: each strip runs the full screen
+   height, from its screen edge up to the panel, so the whole fish (body
+   included) shows beside the panel instead of being hidden behind it.
+   `cover` fills each strip. Both are flipped upside down, and the left one
+   is also mirrored so the pair faces each other. The thin gaps above and
+   below the panel are solid black (.story-overlay), so the page behind
+   never shows. */
 .story-overlay__koi {
   position: fixed;
-  top: 50%;
-  height: min(720px, 86vh);
-  width: clamp(90px, calc((100vw - min(720px, 94vw)) / 2 - 2px), 420px);
-  transform: translateY(-50%);
+  top: 0;
+  bottom: 0;
+  width: calc((100vw - min(720px, 94vw)) / 2);
   background-size: cover;
   background-position: center;
 }
 .story-overlay__koi--left {
   left: 0;
+  transform: scale(-1, -1);
 }
 .story-overlay__koi--right {
   right: 0;
-  transform: translateY(-50%) scaleX(-1);
+  transform: scaleY(-1);
 }
 .story-panel {
   position: relative;
@@ -1189,7 +1187,7 @@ tbody tr:hover {
 }
 
 /* ---------- /our-story page ---------- */
-/* Photos slide left → right across the background; the story sits on a
+/* A still row of photos fills the background; the story sits on a
    frosted panel in front. Fills the screen under the header. */
 .story-page {
   position: relative;
@@ -1218,36 +1216,14 @@ tbody tr:hover {
   height: 100%;
   width: max-content;
   padding-block: 8px; /* space above and below every photo */
-  animation: story-slide 70s linear infinite;
-  /* Still until the visitor scrolls (OurStory.jsx adds .is-moving), then
-     pauses where it is once they stop. */
-  animation-play-state: paused;
-}
-.story-page.is-moving .story-page__track {
-  animation-play-state: running;
 }
 .story-page__track img {
   height: 100%;
   width: auto;
-  /* 8px each side = 16px between photos. Margin, not gap, so both halves
-     of the loop are equal width. */
-  margin-inline: 8px;
+  margin-inline: 8px; /* 8px each side = 16px between photos */
   border-radius: 14px;
   object-fit: cover;
   display: block;
-}
-@keyframes story-slide {
-  from {
-    transform: translateX(-50%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .story-page__track {
-    animation: none;
-  }
 }
 .story-page__panel {
   position: relative;
@@ -1296,10 +1272,12 @@ tbody tr:hover {
   color: var(--ink);
   text-align: center;
 }
-.story-page__cta {
-  display: block;
-  width: fit-content;
-  margin: 24px auto 0;
+.story-page__actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
 }
 @media (max-width: 640px) {
   .story-page__panel {
@@ -1307,9 +1285,6 @@ tbody tr:hover {
   }
 }
 @media (max-width: 760px) {
-  .story-overlay__koi {
-    display: none;
-  }
   .story-panel {
     height: min(720px, 90vh);
   }
@@ -1332,5 +1307,68 @@ tbody tr:hover {
   }
   .story-bubble__body--side .story-stage__images {
     flex: none;
+  }
+}
+
+/* ---------- koi transition into "Design" (components/KoiTransition) ---------- */
+.koi-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 3000; /* above the Design popup, so it can fade off it */
+  background: var(--brand-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: koi-in 0.35s ease;
+  transition: opacity var(--koi-fade, 700ms) ease;
+}
+.koi-transition--fading {
+  opacity: 0;
+  pointer-events: none;
+}
+@keyframes koi-in {
+  from {
+    opacity: 0;
+  }
+}
+.koi-transition__svg {
+  width: min(92vw, 92vh, 620px);
+  height: auto;
+  overflow: visible;
+}
+.koi-point__dot {
+  fill: #fff;
+  stroke: #d9d9d9;
+  stroke-width: 2;
+  transition: fill 0.4s ease, stroke 0.4s ease;
+}
+.koi-point__label {
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  fill: var(--ink);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.koi-point--lit .koi-point__dot {
+  fill: var(--brand-orange);
+  stroke: var(--brand-red);
+}
+.koi-point--lit .koi-point__label {
+  opacity: 1;
+}
+.koi-tail {
+  transform-box: fill-box;
+  transform-origin: 100% 50%; /* hinge where the tail meets the body */
+  animation: koi-tail 0.45s ease-in-out infinite alternate;
+}
+@keyframes koi-tail {
+  from {
+    transform: rotate(-14deg);
+  }
+  to {
+    transform: rotate(14deg);
   }
 }

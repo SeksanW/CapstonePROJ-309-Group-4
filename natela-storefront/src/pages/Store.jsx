@@ -5,7 +5,6 @@ import { usePageContent } from "../context/PageContentContext";
 import ProductCard from "../components/ProductCard";
 import DesignModal from "../components/DesignModal";
 import ShortsIcon from "../components/ShortsIcon";
-import RippleBackground from "../components/RippleBackground";
 
 /* SCRUM-8 — Store page.
    The main page: hero, product grid, sale row, help links. */
@@ -132,7 +131,6 @@ export default function Store() {
           className="page"
           style={{ paddingBlock: 64, position: "relative", background: "#E6F2FB" }}
         >
-          <RippleBackground />
           <div
             className="featured-card"
             style={{ maxWidth: 640, margin: "0 auto", position: "relative", zIndex: 1 }}
