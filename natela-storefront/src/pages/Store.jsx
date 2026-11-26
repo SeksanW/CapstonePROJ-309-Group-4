@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { useProducts } from "../context/ProductsContext";
 import { usePageContent } from "../context/PageContentContext";
 import { money } from "../context/CartContext";
-import { helpLinks } from "../data/products";
 import ProductCard from "../components/ProductCard";
 import StoryModal from "../components/StoryModal";
 import DesignModal from "../components/DesignModal";
@@ -312,27 +311,6 @@ export default function Store() {
           >
             Build your bundle
           </a>
-        </div>
-      </section>
-
-      {/* ---------- HELP ---------- */}
-      <section id="help" className="page" style={{ paddingBottom: 72 }}>
-        <div className="grid grid--4" style={{ gap: 20 }}>
-          {helpLinks.map((h) => (
-            <a
-              key={h.title}
-              href="#help"
-              className="panel"
-              style={{ padding: 22, display: "block" }}
-            >
-              <div style={{ fontSize: 14.5, fontWeight: 600, marginBottom: 5 }}>
-                {h.title}
-              </div>
-              <div style={{ fontSize: 12.5, color: "var(--ink-muted)", lineHeight: 1.5 }}>
-                {h.sub}
-              </div>
-            </a>
-          ))}
         </div>
       </section>
 
