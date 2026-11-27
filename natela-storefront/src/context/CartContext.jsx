@@ -8,7 +8,8 @@ const STORAGE_KEY = "natela.cart";
    CartContext — the cart, and the money maths.
 
    Rules that came from the client brief:
-     · Bundle deal: buy any 2 pairs, take $30 off
+     · Bundle deal: buy any 2 pairs, take $30 off (switched off for now,
+       see BUNDLE_DEAL_ENABLED below)
      · Shipping is a flat $14
      · GST 5%, prices in CAD
      · Checkout needs a Google sign-in; shopping doesn't
@@ -19,6 +20,12 @@ const STORAGE_KEY = "natela.cart";
    --------------------------------------------------------- */
 
 const CartContext = createContext(null);
+
+/* "Any 2 pairs, $30 off". No deal is running right now, so it's switched
+   off: no discount, and nothing about it shows on the site. To run it,
+   set this to true AND set BUNDLE_DEAL_ENABLED=true for order-service
+   (backend), so checkout charges the same as the cart shows. */
+export const BUNDLE_DEAL_ENABLED = false;
 
 const BUNDLE_MIN_ITEMS = 2;
 const BUNDLE_DISCOUNT = 30;
@@ -36,12 +43,17 @@ export function CartProvider({ children }) {
   /* Kept in the browser so it survives a refresh and the trip to
      Stripe and back. Shoppers can fill it before signing in. */
   const [items, setItems] = useState(() => load(STORAGE_KEY, []));
+  // Slide-over cart (CartDrawer), opened automatically whenever something
+  // is added.
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
     save(STORAGE_KEY, items);
   }, [items]);
 
-  function addItem(product, size, qty = 1) {
+  /* `openDrawer: false` from the full cart page itself — popping the
+     drawer open there would just cover the cart it's already showing. */
+  function addItem(product, size, qty = 1, { openDrawer = true } = {}) {
     track("add_to_cart", { productId: product.id, name: product.name, price: product.price, value: product.price * qty });
     const key = lineKey(product.id, size);
     setItems((prev) => {
@@ -65,6 +77,7 @@ export function CartProvider({ children }) {
         },
       ];
     });
+    if (openDrawer) setDrawerOpen(true);
   }
 
   function removeItem(key) {
@@ -84,7 +97,7 @@ export function CartProvider({ children }) {
   const totals = useMemo(() => {
     const count = items.reduce((n, i) => n + i.qty, 0);
     const subtotal = items.reduce((n, i) => n + i.price * i.qty, 0);
-    const bundleDiscount = count >= BUNDLE_MIN_ITEMS ? BUNDLE_DISCOUNT : 0;
+    const bundleDiscount = BUNDLE_DEAL_ENABLED && count >= BUNDLE_MIN_ITEMS ? BUNDLE_DISCOUNT : 0;
     const afterDiscount = Math.max(0, subtotal - bundleDiscount);
     const shipping = count === 0 ? 0 : FLAT_SHIPPING;
     const tax = afterDiscount * TAX_RATE;
@@ -101,8 +114,18 @@ export function CartProvider({ children }) {
   }, [items]);
 
   const value = useMemo(
-    () => ({ items, addItem, removeItem, setQty, clear, totals }),
-    [items, totals]
+    () => ({
+      items,
+      addItem,
+      removeItem,
+      setQty,
+      clear,
+      totals,
+      drawerOpen,
+      openDrawer: () => setDrawerOpen(true),
+      closeDrawer: () => setDrawerOpen(false),
+    }),
+    [items, totals, drawerOpen]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
