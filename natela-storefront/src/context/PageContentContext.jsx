@@ -46,3 +46,19 @@ export function usePageContent() {
   if (!ctx) throw new Error("usePageContent must be used inside <PageContentProvider>");
   return ctx;
 }
+
+/* One section of the page content with built-in defaults filled in: the
+   admin's value wins, but only when it's actually filled in, so an empty
+   field in "Main page edits" means "use the built-in text/photo".
+   Pass a module-level `defaults` object so the memo stays stable. */
+export function usePageSection(name, defaults) {
+  const { content } = usePageContent();
+  const saved = content[name];
+  return useMemo(() => {
+    const out = { ...defaults };
+    for (const [k, v] of Object.entries(saved || {})) {
+      if (typeof v === "string" && v.trim()) out[k] = v;
+    }
+    return out;
+  }, [saved, defaults]);
+}

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useProducts } from "../context/ProductsContext";
-import { usePageContent } from "../context/PageContentContext";
+import { usePageSection } from "../context/PageContentContext";
 import { useCurrency } from "../context/CurrencyContext";
 import { BUNDLE_DEAL_ENABLED } from "../context/CartContext";
 import ProductCard from "../components/ProductCard";
@@ -9,21 +9,41 @@ import ShortsIcon from "../components/ShortsIcon";
 import { track } from "../lib/analytics";
 
 /* SCRUM-8 — Store page.
-   The main page: hero, product grid, sale row, bundle deal (when on). */
+   The main page: hero, product grid, sale row, bundle deal (when on).
+
+   The hero's text and photo, and the section titles below it, are edited
+   in the admin's "Main page edits" (page content `hero` and `home`).
+   Empty fields there fall back to these built-in defaults — keep them in
+   sync with the admin's DEFAULTS. */
+
+export const HERO_DEFAULTS = {
+  badge: "Koi Fish Series",
+  heading: "Built for the ring. Made to last.",
+  body: "Hand-finished Muay Thai shorts with a four-way stretch panel and a waistband that stays put through every round.",
+  primaryLabel: "About us",
+  image: "",
+};
+
+export const HOME_DEFAULTS = {
+  latestTitle: "Latest release",
+  productsTitle: "Products",
+  saleTitle: "On sale",
+  saleBadge: "UP TO 30% OFF",
+  saleNote: "End of season — while stock lasts.",
+};
 
 export default function Store() {
   useEffect(() => {
     track("store_view");
   }, []);
   const { products } = useProducts();
-  const { content } = usePageContent();
   const { money } = useCurrency();
   const [productsOpen, setProductsOpen] = useState(true);
 
-  /* The hero section is edited through the admin's "Main
-     page edits" screen (GET /page-content) — not tied to any product, so
-     a product's photo should never end up here. */
-  const hero = content.hero ?? {};
+  /* Page content, not tied to any product — a product's photo should
+     never end up in the hero. */
+  const hero = usePageSection("hero", HERO_DEFAULTS);
+  const home = usePageSection("home", HOME_DEFAULTS);
 
   /* The API only returns live products; the filter stays as a guard. */
   const live = useMemo(
@@ -84,10 +104,10 @@ export default function Store() {
               marginBottom: 22,
             }}
           >
-            {hero.badge || "Koi Fish Series"}
+            {hero.badge}
           </span>
           <h1 className="h1" style={{ marginBottom: 20 }}>
-            {hero.heading || "Built for the ring. Made to last."}
+            {hero.heading}
           </h1>
           <p
             style={{
@@ -98,11 +118,10 @@ export default function Store() {
               marginBottom: 32,
             }}
           >
-            {hero.body ||
-              "Hand-finished Muay Thai shorts with a four-way stretch panel and a waistband that stays put through every round."}
+            {hero.body}
           </p>
           <Link to="/about" className="btn btn--grad">
-            About us
+            {hero.primaryLabel}
           </Link>
           </div>
         </div>
@@ -135,7 +154,7 @@ export default function Store() {
           the same size). Older ones are in the full grid below. */}
       {latest.length > 0 && (
         <section id="latest" className="page latest">
-          <h2 className="latest__title">Latest release</h2>
+          <h2 className="latest__title">{home.latestTitle}</h2>
           <div className="latest__grid">
             {latest.map((p) => (
               <ProductCard key={p.id} product={p} />
@@ -157,7 +176,7 @@ export default function Store() {
               aria-controls="products-grid"
               onClick={() => setProductsOpen((o) => !o)}
             >
-              Products
+              {home.productsTitle}
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <polyline points="6 9 12 15 18 9" />
               </svg>
@@ -187,7 +206,7 @@ export default function Store() {
         >
           <div className="page">
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
-              <h2 className="h2">On sale</h2>
+              <h2 className="h2">{home.saleTitle}</h2>
               <span
                 style={{
                   background: "var(--brand-gradient)",
@@ -199,11 +218,11 @@ export default function Store() {
                   borderRadius: "var(--radius)",
                 }}
               >
-                UP TO 30% OFF
+                {home.saleBadge}
               </span>
             </div>
             <p className="muted" style={{ marginBottom: 26 }}>
-              End of season — while stock lasts.
+              {home.saleNote}
             </p>
 
             <div className="grid grid--3">
