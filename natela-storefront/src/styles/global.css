@@ -2280,18 +2280,14 @@ tbody tr:hover {
 .guide {
   padding-block: 56px 80px;
   max-width: 960px;
-}
-.guide-table {
-  margin: 8px 0 32px;
-}
-.guide-table th,
-.guide-table td {
-  text-align: center;
-  white-space: nowrap;
+  margin-inline: auto;
 }
 .guide-figure {
   margin: 0;
   max-width: 540px;
+}
+.guide-figure--center {
+  margin-inline: auto;
 }
 .guide-figure img,
 .guide-step__img {
