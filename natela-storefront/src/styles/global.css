@@ -2619,6 +2619,15 @@ tbody tr:hover {
   display: flex;
   gap: 8px;
 }
+/* Inputs have a built-in minimum width; let them shrink so the Save
+   button stays inside the panel on phones. */
+.account-inline .fld {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.account-inline .btn {
+  flex: none;
+}
 .account-empty {
   text-align: center;
   padding: 24px 0 8px;
@@ -3107,14 +3116,17 @@ tbody tr:hover {
 }
 
 @media (max-width: 760px) {
+  /* minmax(0, 1fr), not 1fr: a plain 1fr column grows to fit the
+     no-wrap tab row, which made the whole page wider than the phone. */
   .account-shell {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
       "nav"
       "main"
       "foot";
   }
   .account-nav {
+    min-width: 0;
     border-right: none;
     border-bottom: 1px solid var(--line);
     padding: 16px 0 0;
@@ -3140,14 +3152,17 @@ tbody tr:hover {
     padding: 18px 18px 4px;
   }
   .account-facts {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 2px;
   }
   .account-facts dd {
     margin-bottom: 10px;
   }
   .address-form__grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .address-form {
+    padding: 14px;
   }
 }
 
