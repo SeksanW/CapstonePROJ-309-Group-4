@@ -45,7 +45,10 @@ export const CARE_DEFAULTS = {
 
 const lines = (text) => text.split("\n").map((l) => l.trim()).filter(Boolean);
 
-export default function CareGuide() {
+/* The care steps. Shown on the "Size chart & product care" page
+   (Guides.jsx, /care-guide) and in the product page's popup
+   (SizeCareModal). */
+export function CareContent() {
   const c = usePageSection("care", CARE_DEFAULTS);
   const steps = [1, 2, 3]
     .map((n) => ({
@@ -57,7 +60,7 @@ export default function CareGuide() {
     .filter((s) => s.title || s.items.length);
 
   return (
-    <div className="page guide">
+    <>
       <h1 className="about-h1">{c.heading}</h1>
       <p className="about-body">{c.intro}</p>
 
@@ -81,6 +84,6 @@ export default function CareGuide() {
         <h2 className="about-h2">{c.heatHeading}</h2>
         <p className="about-body">{c.heatBody}</p>
       </section>
-    </div>
+    </>
   );
 }

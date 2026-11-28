@@ -6,12 +6,14 @@ import { useCurrency } from "../context/CurrencyContext";
 import { SIZES } from "../data/products";
 import ShortsIcon from "../components/ShortsIcon";
 import ProductDescription from "../components/ProductDescription";
+import SizeCareModal from "../components/SizeCareModal";
 
 /* /product/:id — one product. Reached by clicking a product card.
 
    Layout: breadcrumb on top; the big photo with a scrollable "more
    photos" strip on its right; details on the right (name, price, sizes
-   with stock, quantity, low-stock note, Add to cart, description).
+   with stock, the "Size chart & product care" popup button, quantity,
+   the low-stock warning for the chosen size, Add to cart, description).
 
    Photos = the main `image` first, then `images` (added in the admin's
    "More photos"). The strip only shows when there's more than one. */
@@ -37,6 +39,7 @@ export default function Product() {
   const [photo, setPhoto] = useState(0);
   const [size, setSize] = useState(null);
   const [qty, setQty] = useState(1);
+  const [guideOpen, setGuideOpen] = useState(false);
   // Add-to-cart button: "idle" → "filling" (bar sweeps left to right) →
   // "added" ("Added to cart ✓"), then the cart panel opens.
   const [addState, setAddState] = useState("idle");
@@ -250,6 +253,15 @@ export default function Product() {
                 );
               })}
             </div>
+
+            {/* Opens over the page; doesn't go anywhere. */}
+            <button type="button" className="pdp__guide-btn" aria-haspopup="dialog" onClick={() => setGuideOpen(true)}>
+              Size chart &amp; product care
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="2" y="8" width="20" height="8" rx="1" />
+                <path d="M6 8v3M10 8v4M14 8v3M18 8v4" />
+              </svg>
+            </button>
           </div>
 
           <div className="pdp__block">
@@ -267,10 +279,11 @@ export default function Product() {
             </div>
           </div>
 
+          {/* Only for the chosen size, once it's down to LOW_STOCK or fewer. */}
           {size && left > 0 && left <= LOW_STOCK && (
-            <p className="pdp__low">
-              <span aria-hidden="true" />
-              Low stock · {left} left in {size}
+            <p className="pdp__low" role="status">
+              <span className="pdp__low-dot" aria-hidden="true" />
+              Low stock – {left} {left === 1 ? "item" : "items"} left
             </p>
           )}
 
@@ -298,6 +311,8 @@ export default function Product() {
           <ProductDescription text={product.description} />
         </div>
       </div>
+
+      {guideOpen && <SizeCareModal onClose={() => setGuideOpen(false)} />}
     </div>
   );
 }

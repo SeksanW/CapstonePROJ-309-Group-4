@@ -25,10 +25,16 @@ const MENU = [
       { label: "Latest release", section: "latest" },
     ],
   },
-  { label: "Size guide", to: "/size-guide" },
-  { label: "Care guide", to: "/care-guide" },
+  { label: "Size chart & product care", to: "/size-guide" },
   { label: "About us", to: "/about" },
 ];
+
+/* First name from the account, or the start of the email if they never
+   gave one (e.g. "sam" from sam.lee@example.com). */
+function firstName(user) {
+  const name = user.displayName?.trim().split(/\s+/)[0];
+  return name || user.email?.split("@")[0] || "there";
+}
 
 export default function Header() {
   const { totals, openDrawer } = useCart();
@@ -115,14 +121,20 @@ export default function Header() {
             {totals.count > 0 && <span className="cart-count">{totals.count}</span>}
           </button>
 
-          {/* Signed in: the account page (orders, saved cards, sign out).
-              Signed out: sign in / create an account. */}
+          {/* Signed in: "Welcome back, Name" beside the icon, both going to
+              the account page (orders, saved cards, sign out).
+              Signed out: just the icon, to sign in / create an account. */}
           <Link
             to={user ? "/account" : "/account/sign-in"}
             aria-label={user ? `My account (${user.email})` : "Sign in or create an account"}
             title={user ? `Signed in as ${user.email}` : "Sign in"}
-            style={{ display: "flex" }}
+            className="header__account"
           >
+            {user && (
+              <span className="header__greeting">
+                Welcome back, <strong>{firstName(user)}</strong>
+              </span>
+            )}
             <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke={user ? "var(--brand-red)" : "#111"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="8" r="4" />
               <path d="M4 21a8 8 0 0 1 16 0" />

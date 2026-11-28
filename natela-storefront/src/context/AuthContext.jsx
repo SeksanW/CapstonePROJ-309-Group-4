@@ -1,6 +1,10 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import {
+  EmailAuthProvider,
   GoogleAuthProvider,
+  deleteUser,
+  reauthenticateWithCredential,
+  reauthenticateWithPopup,
   createUserWithEmailAndPassword,
   linkWithCredential,
   onAuthStateChanged,
@@ -10,6 +14,7 @@ import {
   signInWithPopup,
   signOut as firebaseSignOut,
   updateProfile,
+  verifyBeforeUpdateEmail,
 } from "firebase/auth";
 import { auth } from "../lib/firebase";
 
@@ -135,6 +140,30 @@ export function AuthProvider({ children }) {
         setVersion((v) => v + 1);
       },
 
+      /* Deleting the account needs a recent sign-in. Password accounts
+         re-enter their password; Google-only ones confirm in the popup
+         (call straight from a click, like signInWithGoogle). */
+      reauthenticate: async (password) => {
+        const current = auth.currentUser;
+        const hasPassword = current.providerData.some((p) => p.providerId === "password");
+        if (hasPassword) {
+          await reauthenticateWithCredential(current, EmailAuthProvider.credential(current.email, password));
+        } else {
+          await reauthenticateWithPopup(current, new GoogleAuthProvider());
+        }
+      },
+
+      /* Emails a link to the new address; the account's email only
+         changes once it's clicked, so a typo can't lock anyone out. Needs
+         a recent sign-in: call reauthenticate first. Firebase then signs
+         the shopper out everywhere, and they sign in with the new email. */
+      changeEmail: (newEmail) =>
+        verifyBeforeUpdateEmail(auth.currentUser, newEmail.trim(), continueUrl("/account/sign-in")),
+
+      /* Removes the Firebase sign-in itself. Call the backend's
+         DELETE /account first, while the token still works. */
+      deleteAccount: () => deleteUser(auth.currentUser),
+
       refreshUser,
       clearPendingGoogleLink: () => setPendingGoogleLink(null),
       signOut: () => firebaseSignOut(auth),
@@ -184,6 +213,10 @@ export function authErrorMessage(err) {
       return "Your browser blocked the Google window. Allow pop-ups for this site and try again.";
     case "auth/account-exists-with-different-credential":
       return "This email already has a password account. Sign in with your password below and we'll link Google to it.";
+    case "auth/requires-recent-login":
+      return "For security, please sign out and back in, then try again.";
+    case "auth/operation-not-allowed":
+      return "That isn't switched on for this store yet.";
     case "auth/network-request-failed":
       return "Couldn't reach the sign-in service. Check your connection and try again.";
     default:

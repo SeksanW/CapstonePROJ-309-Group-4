@@ -12,8 +12,7 @@ import Cart from "./pages/Cart";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
 import Product from "./pages/Product";
 import About from "./pages/About";
-import SizeGuide from "./pages/SizeGuide";
-import CareGuide from "./pages/CareGuide";
+import Guides from "./pages/Guides";
 import SignIn from "./pages/SignIn";
 import Account from "./pages/Account";
 
@@ -57,8 +56,8 @@ export default function App() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/product/:id" element={<Product />} />
         <Route path="/about" element={<About />} />
-        <Route path="/size-guide" element={<SizeGuide />} />
-        <Route path="/care-guide" element={<CareGuide />} />
+        <Route path="/size-guide" element={<Guides tab="size" />} />
+        <Route path="/care-guide" element={<Guides tab="care" />} />
         <Route path="/checkout/success" element={<CheckoutSuccess />} />
         <Route path="/account" element={<Account />} />
         <Route path="/account/sign-in" element={<SignIn />} />
