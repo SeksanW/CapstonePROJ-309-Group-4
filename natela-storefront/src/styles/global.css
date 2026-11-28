@@ -904,6 +904,35 @@ tbody tr:hover {
   border: 1px solid var(--line);
   color: var(--ink);
 }
+/* Starter questions under the bot's greeting (ChatWidget.jsx). */
+.chat-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+.chat-preset {
+  background: var(--surface);
+  border: 1px solid var(--brand-red);
+  color: var(--brand-red);
+  border-radius: 999px;
+  padding: 7px 12px;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.chat-preset:hover:not(:disabled),
+.chat-preset:focus-visible {
+  background: var(--brand-red);
+  color: var(--brand-white);
+  outline: none;
+}
+.chat-preset:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
 .chat-panel__notice {
   font-size: 11.5px;
   color: var(--ink-muted);
@@ -2732,6 +2761,21 @@ tbody tr:hover {
 }
 .order-row__foot a {
   text-decoration: underline;
+}
+/* "Claim order" under a guest order (Account.jsx). */
+.order-row__action {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+.order-row__action .btn {
+  padding: 9px 16px;
+  font-size: 13px;
+}
+.claim-section {
+  margin-top: 28px;
+  border-top: 1px solid var(--line);
+  border-bottom: none;
 }
 .order-status {
   font-size: 11.5px;

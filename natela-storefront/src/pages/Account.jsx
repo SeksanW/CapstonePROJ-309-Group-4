@@ -120,7 +120,7 @@ function AccountPage({ user }) {
           {tab === "orders" && (
             <>
               <h2 className="h3 account-main__title">Order history</h2>
-              <Orders call={call} />
+              <Orders call={call} verified={verified} />
             </>
           )}
           {tab === "subscription" && (
@@ -642,75 +642,158 @@ function brandName(brand) {
 
 /* ---------- tab 2: order history ---------- */
 
-function Orders({ call }) {
+/* The number customers see in their emails: "#" + the id's last 8. */
+const shortRef = (id) => `#${String(id).slice(-8).toUpperCase()}`;
+
+/* Your orders, and below them any orders placed as a guest (no account)
+   with this account's email, each with a "Claim order" button that adds
+   it to this account. Claiming needs a verified email, since that's the
+   proof the inbox is yours. Once claimed an order belongs to this
+   account: it moves up into your orders and can't be claimed by anyone
+   again (the server refuses any order already linked to an account). */
+function Orders({ call, verified }) {
   const [orders, setOrders] = useState(null);
+  const [claimable, setClaimable] = useState([]);
   const [error, setError] = useState(null);
+  const [claiming, setClaiming] = useState(null); // order id
+  const [claimError, setClaimError] = useState(null); // { id, message }
+  const [version, setVersion] = useState(0); // bump to reload both lists
 
   useEffect(() => {
     let cancelled = false;
     call("/orders/mine")
       .then((list) => !cancelled && setOrders(list))
       .catch((err) => !cancelled && setError(err.message));
+    if (verified) {
+      call("/orders/claimable")
+        .then((list) => !cancelled && setClaimable(list))
+        .catch(() => !cancelled && setClaimable([])); // the main list still shows
+    }
     return () => {
       cancelled = true;
     };
-  }, [call]);
+  }, [call, verified, version]);
+
+  async function claim(order) {
+    setClaiming(order.id);
+    setClaimError(null);
+    try {
+      await call(`/orders/guest/${encodeURIComponent(order.id)}/claim`, { method: "POST" });
+      setVersion((v) => v + 1);
+    } catch (err) {
+      setClaimError({
+        id: order.id,
+        message:
+          err.status === 404
+            ? "This order can't be claimed. It may already be linked to an account."
+            : err.message,
+      });
+      setVersion((v) => v + 1); // refresh, so an order claimed elsewhere drops off
+    } finally {
+      setClaiming(null);
+    }
+  }
 
   if (error) return <p className="account-error">{error}</p>;
   if (!orders) return <p className="muted">Loading your orders…</p>;
-  if (orders.length === 0) {
-    return (
-      <div className="account-empty">
-        <ShortsIcon size={48} />
-        <p>No orders yet. Orders you place while signed in show up here.</p>
-        <Link to="/" className="btn btn--grad">
-          Shop all shorts
-        </Link>
-      </div>
-    );
-  }
 
   return (
-    <ul className="order-list">
-      {orders.map((order) => (
-        <li key={order.id} className="order-row">
-          <div className="order-row__head">
-            <div>
-              <div className="order-row__date">{dateFmt.format(new Date(order.paidAt || order.createdAt))}</div>
-              <div className="order-row__id">Order {order.id}</div>
-            </div>
-            <span className={`order-status order-status--${order.status}`}>{STATUS_LABEL[order.status] ?? order.status}</span>
+    <>
+      {orders.length === 0 ? (
+        <div className="account-empty">
+          <ShortsIcon size={48} />
+          <p>No orders yet. Orders you place while signed in show up here.</p>
+          <Link to="/" className="btn btn--grad">
+            Shop all shorts
+          </Link>
+        </div>
+      ) : (
+        <ul className="order-list">
+          {orders.map((order) => (
+            <OrderRow key={order.id} order={order} />
+          ))}
+        </ul>
+      )}
+
+      {claimable.length > 0 && (
+        <section className="account-section claim-section">
+          <div className="account-section__head">
+            <h3>Orders placed as a guest</h3>
           </div>
-          <ul className="order-row__items">
-            {order.items.map((item) => (
-              <li key={`${item.productId}__${item.size}`}>
-                <div className="order-row__thumb">
-                  {item.image ? <img src={item.image} alt="" /> : <ShortsIcon size={28} stroke={2} />}
-                </div>
-                <span>
-                  {item.name} · size {item.size} × {item.qty}
-                </span>
-                <span>{money(item.price * item.qty)}</span>
-              </li>
+          <p className="account-copy">
+            These orders were placed with your email address without signing in. Claim one to add it to your
+            order history.
+          </p>
+          <ul className="order-list">
+            {claimable.map((order) => (
+              <OrderRow
+                key={order.id}
+                order={order}
+                action={
+                  <button
+                    type="button"
+                    className="btn btn--quiet"
+                    onClick={() => claim(order)}
+                    disabled={claiming !== null}
+                  >
+                    {claiming === order.id ? "Claiming…" : "Claim order"}
+                  </button>
+                }
+                error={claimError?.id === order.id ? claimError.message : null}
+              />
             ))}
           </ul>
-          <div className="order-row__foot">
-            <span className="muted">
-              {order.shippingMethod ? `${order.shippingMethod.carrier} ${order.shippingMethod.service}`.trim() : ""}
-              {order.trackingUrl && (
-                <>
-                  {order.shippingMethod ? " · " : ""}
-                  <a href={order.trackingUrl} target="_blank" rel="noreferrer">
-                    Track package
-                  </a>
-                </>
-              )}
-            </span>
-            <strong>{money(order.totals.total)} CAD</strong>
+        </section>
+      )}
+      {claimError && !claimable.some((o) => o.id === claimError.id) && (
+        <p className="account-error">{claimError.message}</p>
+      )}
+    </>
+  );
+}
+
+function OrderRow({ order, action, error }) {
+  return (
+    <li className="order-row">
+      <div className="order-row__head">
+        <div>
+          <div className="order-row__date">{dateFmt.format(new Date(order.paidAt || order.createdAt))}</div>
+          <div className="order-row__id" title={order.id}>
+            Order {shortRef(order.id)}
           </div>
-        </li>
-      ))}
-    </ul>
+        </div>
+        <span className={`order-status order-status--${order.status}`}>{STATUS_LABEL[order.status] ?? order.status}</span>
+      </div>
+      <ul className="order-row__items">
+        {order.items.map((item) => (
+          <li key={`${item.productId}__${item.size}`}>
+            <div className="order-row__thumb">
+              {item.image ? <img src={item.image} alt="" /> : <ShortsIcon size={28} stroke={2} />}
+            </div>
+            <span>
+              {item.name} · size {item.size} × {item.qty}
+            </span>
+            <span>{money(item.price * item.qty)}</span>
+          </li>
+        ))}
+      </ul>
+      <div className="order-row__foot">
+        <span className="muted">
+          {order.shippingMethod ? `${order.shippingMethod.carrier} ${order.shippingMethod.service}`.trim() : ""}
+          {order.trackingUrl && (
+            <>
+              {order.shippingMethod ? " · " : ""}
+              <a href={order.trackingUrl} target="_blank" rel="noreferrer">
+                Track package
+              </a>
+            </>
+          )}
+        </span>
+        <strong>{money(order.totals.total)} CAD</strong>
+      </div>
+      {action && <div className="order-row__action">{action}</div>}
+      {error && <p className="account-error">{error}</p>}
+    </li>
   );
 }
 

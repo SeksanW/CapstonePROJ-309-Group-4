@@ -32,8 +32,8 @@ function describeProblem(problem, items) {
 }
 
 export default function Cart() {
-  const { items, removeItem, setQty, totals } = useCart();
-  const { money, currency } = useCurrency();
+  const { items, removeItem, setQty, totals, checkingPrices, cartProblems } = useCart();
+  const { money, currency, ratesDate } = useCurrency();
   const { products } = useProducts();
   const { user, ready } = useAuth();
   const accountCheckout = isVerified(user);
@@ -280,10 +280,28 @@ export default function Cart() {
               </span>
             </div>
             <div style={{ fontSize: 12, color: "var(--ink-faint)", marginBottom: 24 }}>
+              {checkingPrices && <div aria-live="polite">Checking prices…</div>}
               {currency === "CAD"
                 ? "Canadian dollars · duties calculated at checkout"
-                : `Approximate ${currency} prices. You'll be charged ${moneyCad(totals.total)} CAD at checkout · duties calculated at checkout`}
+                : `Approximate ${currency} prices${ratesDate ? ` (exchange rate of ${ratesDate})` : ""}. You'll be charged ${moneyCad(totals.total)} CAD at checkout · duties calculated at checkout`}
             </div>
+
+            {/* The server's quote found lines that can't be ordered (sold
+                out, removed). Shown before checkout so the shopper can fix
+                the cart first; checkout would refuse with the same list. */}
+            {cartProblems.length > 0 && !checkoutError && (
+              <div
+                role="alert"
+                className="notice"
+                style={{ marginBottom: 14, flexDirection: "column", alignItems: "flex-start", gap: 4 }}
+              >
+                {cartProblems.map((p) => (
+                  <div key={`${p.productId}__${p.size}`} style={{ fontSize: 13, color: "var(--brand-red)" }}>
+                    {describeProblem(p, items)}
+                  </div>
+                ))}
+              </div>
+            )}
 
             {checkoutError && (
               <div

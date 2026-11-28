@@ -21,6 +21,11 @@ const SESSION_KEY = "natela.chatSession";
 const CONVERSATION_KEY = "natela.chatConversation";
 const POLL_EVERY_MS = 12000;
 
+/* Tappable starter questions under the greeting, until the shopper sends
+   their first message. "Where's my order?" leads the bot to ask for the
+   order number and checkout email (or look in a signed-in account). */
+const PRESET_QUESTIONS = ["Where's my order?", "Help me choose a size", "I'd like to return something"];
+
 function getSessionId() {
   let id = load(SESSION_KEY, null);
   if (!id) {
@@ -74,10 +79,10 @@ export default function ChatWidget() {
     }
   }
 
-  async function send() {
-    const text = input.trim();
+  async function send(preset) {
+    const text = (preset ?? input).trim();
     if (!text || sending || !conversation) return;
-    setInput("");
+    if (!preset) setInput("");
     setSending(true);
     setError(null);
     setConversation((c) => ({ ...c, messages: [...c.messages, { role: "user", text }] }));
@@ -162,6 +167,15 @@ export default function ChatWidget() {
                 {m.text}
               </div>
             ))}
+            {conversation?.status === "bot" && !conversation.messages.some((m) => m.role === "user") && (
+              <div className="chat-presets" role="group" aria-label="Suggested questions">
+                {PRESET_QUESTIONS.map((q) => (
+                  <button key={q} type="button" className="chat-preset" onClick={() => send(q)} disabled={sending}>
+                    {q}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {conversation?.status === "needs_human" && (
