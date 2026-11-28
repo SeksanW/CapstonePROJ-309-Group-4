@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
-import { useAuth, isSignInCancelled } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 import { CURRENCIES, useCurrency } from "../context/CurrencyContext";
 import { useProducts } from "../context/ProductsContext";
 
@@ -32,7 +32,7 @@ const MENU = [
 
 export default function Header() {
   const { totals, openDrawer } = useCart();
-  const { user, signIn, signOut } = useAuth();
+  const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -75,16 +75,6 @@ export default function Header() {
     else if (item.to) navigate(item.to);
   }
 
-  function handleAccountClick() {
-    if (user) {
-      signOut();
-    } else {
-      signIn().catch((err) => {
-        if (!isSignInCancelled(err)) console.error(err);
-      });
-    }
-  }
-
   return (
     <>
       <header className="header">
@@ -125,17 +115,19 @@ export default function Header() {
             {totals.count > 0 && <span className="cart-count">{totals.count}</span>}
           </button>
 
-          <button
-            aria-label={user ? `Sign out (${user.email})` : "Sign in"}
+          {/* Signed in: the account page (orders, saved cards, sign out).
+              Signed out: sign in / create an account. */}
+          <Link
+            to={user ? "/account" : "/account/sign-in"}
+            aria-label={user ? `My account (${user.email})` : "Sign in or create an account"}
             title={user ? `Signed in as ${user.email}` : "Sign in"}
-            onClick={handleAccountClick}
-            style={{ background: "none", border: "none", padding: 0, display: "flex" }}
+            style={{ display: "flex" }}
           >
             <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke={user ? "var(--brand-red)" : "#111"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="8" r="4" />
               <path d="M4 21a8 8 0 0 1 16 0" />
             </svg>
-          </button>
+          </Link>
         </div>
       </header>
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { useCart, money } from "../context/CartContext";
-import { useAuth, isSignInCancelled } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 import { api } from "../lib/api";
 import { track } from "../lib/analytics";
 
@@ -13,7 +13,8 @@ import { track } from "../lib/analytics";
 export default function CheckoutSuccess() {
   const [params] = useSearchParams();
   const sessionId = params.get("session_id");
-  const { user, ready, signIn } = useAuth();
+  const { user, ready } = useAuth();
+  const { pathname, search } = useLocation();
   const { clear } = useCart();
   const [order, setOrder] = useState(null);
   const [error, setError] = useState(null);
@@ -57,12 +58,12 @@ export default function CheckoutSuccess() {
         text={user ? error : "If you checked out signed in, sign in with that account to see it."}
         action={
           user ? undefined : (
-            <button
+            <Link
               className="btn btn--grad"
-              onClick={() => signIn().catch((err) => !isSignInCancelled(err) && setError(err.message))}
+              to={`/account/sign-in?next=${encodeURIComponent(pathname + search)}`}
             >
-              Continue with Google
-            </button>
+              Sign in
+            </Link>
           )
         }
       />

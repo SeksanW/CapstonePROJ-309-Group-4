@@ -14,6 +14,8 @@ import Product from "./pages/Product";
 import About from "./pages/About";
 import SizeGuide from "./pages/SizeGuide";
 import CareGuide from "./pages/CareGuide";
+import SignIn from "./pages/SignIn";
+import Account from "./pages/Account";
 
 /* Storefront layout: header and footer around every page, plus the
    floating help/returns chat widget. The site opens straight on the
@@ -58,6 +60,8 @@ export default function App() {
         <Route path="/size-guide" element={<SizeGuide />} />
         <Route path="/care-guide" element={<CareGuide />} />
         <Route path="/checkout/success" element={<CheckoutSuccess />} />
+        <Route path="/account" element={<Account />} />
+        <Route path="/account/sign-in" element={<SignIn />} />
       </Route>
       <Route
         path="*"

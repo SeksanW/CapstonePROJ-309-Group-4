@@ -3,14 +3,16 @@ import { Link } from "react-router-dom";
 import { useCart, money as moneyCad, MAX_QTY_PER_LINE, BUNDLE_DEAL_ENABLED } from "../context/CartContext";
 import { useCurrency } from "../context/CurrencyContext";
 import { useProducts } from "../context/ProductsContext";
-import { useAuth, isSignInCancelled } from "../context/AuthContext";
+import { useAuth, isVerified } from "../context/AuthContext";
 import { api } from "../lib/api";
 import { track, visitId } from "../lib/analytics";
 import ShortsIcon from "../components/ShortsIcon";
 
 /* SCRUM-5 — Cart.
-   Checkout works signed in (Google — the first sign-in creates the
-   account) or as a guest with just an email. Either way, order-service
+   Checkout works signed in (a verified account: the order lands in
+   their order history and Stripe offers their saved cards) or as a
+   guest with just an email, no account needed. A signed-in shopper who
+   hasn't verified their email yet checks out the guest way. Either way, order-service
    prices the cart and sends the shopper to Stripe's hosted payment page.
    Bundle discount and GST are worked out in CartContext for
    display; the server recalculates them. */
@@ -33,7 +35,8 @@ export default function Cart() {
   const { items, removeItem, setQty, totals } = useCart();
   const { money, currency } = useCurrency();
   const { products } = useProducts();
-  const { user, ready, signIn } = useAuth();
+  const { user, ready } = useAuth();
+  const accountCheckout = isVerified(user);
   const [checkingOut, setCheckingOut] = useState(false);
   const [checkoutError, setCheckoutError] = useState(null);
   const [guestEmail, setGuestEmail] = useState("");
@@ -47,17 +50,22 @@ export default function Cart() {
     track("cart_view");
   }, []);
 
+  // Not verified yet: fill in their email for the guest checkout.
+  useEffect(() => {
+    if (user?.email && !accountCheckout) setGuestEmail((e) => e || user.email);
+  }, [user, accountCheckout]);
+
   async function proceedToCheckout() {
     setCheckoutError(null);
     setCheckingOut(true);
     try {
-      const token = user ? await user.getIdToken() : undefined;
+      const token = accountCheckout ? await user.getIdToken() : undefined;
       const { url, orderId } = await api("/orders/checkout", {
         method: "POST",
         token,
         body: {
           items: items.map(({ productId, size, qty }) => ({ productId, size, qty })),
-          ...(!user && { guestEmail: guestEmail.trim() }),
+          ...(!accountCheckout && { guestEmail: guestEmail.trim() }),
           analyticsSessionId: visitId(),
         },
       });
@@ -66,14 +74,6 @@ export default function Cart() {
     } catch (err) {
       setCheckoutError(err);
       setCheckingOut(false);
-    }
-  }
-
-  async function signInInstead() {
-    try {
-      await signIn();
-    } catch (err) {
-      if (!isSignInCancelled(err)) setCheckoutError(err);
     }
   }
 
@@ -307,7 +307,7 @@ export default function Cart() {
               </div>
             )}
 
-            {!user && (
+            {!accountCheckout && (
               <div style={{ marginBottom: 14 }}>
                 <label
                   htmlFor="guestEmail"
@@ -332,9 +332,9 @@ export default function Cart() {
               onClick={proceedToCheckout}
               /* Until Firebase has restored the session, `user` is null even
                  for a signed-in shopper, and it'd wrongly ask for an email. */
-              disabled={checkingOut || !ready || (!user && !guestEmailValid)}
+              disabled={checkingOut || !ready || (!accountCheckout && !guestEmailValid)}
             >
-              {checkingOut ? "Starting checkout…" : user ? "Proceed to checkout" : "Checkout as guest"}
+              {checkingOut ? "Starting checkout…" : accountCheckout ? "Proceed to checkout" : "Checkout as guest"}
             </button>
             <div
               style={{
@@ -344,27 +344,27 @@ export default function Cart() {
                 margin: "10px 0 0",
               }}
             >
-              {user ? (
+              {accountCheckout ? (
                 `Signed in as ${user.email}`
+              ) : user ? (
+                <>
+                  Signed in as {user.email}, not verified yet, so this goes through as a guest order.{" "}
+                  <Link to="/account" style={{ textDecoration: "underline" }}>
+                    Verify your email
+                  </Link>{" "}
+                  to save orders to your account.
+                </>
               ) : (
                 <>
                   Have an account?{" "}
-                  <button
-                    type="button"
-                    onClick={signInInstead}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      padding: 0,
-                      font: "inherit",
-                      color: "inherit",
-                      textDecoration: "underline",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Sign in with Google
-                  </button>{" "}
-                  instead — first time? That creates one.
+                  <Link to="/account/sign-in?next=/cart" style={{ textDecoration: "underline" }}>
+                    Sign in
+                  </Link>{" "}
+                  or{" "}
+                  <Link to="/account/sign-in?mode=create&next=/cart" style={{ textDecoration: "underline" }}>
+                    create one
+                  </Link>{" "}
+                  to track orders and save cards.
                 </>
               )}
             </div>
