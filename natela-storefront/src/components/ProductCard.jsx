@@ -11,7 +11,8 @@ import ShortsIcon from "./ShortsIcon";
    Photo, name and price (sale price shown with the old price struck
    through), all linking to the product page. A small "+" square on the
    photo's bottom-right corner is a quick add: hover it (tap on touch
-   screens) to show the sizes, click a size to add one to the cart.
+   screens) to show the sizes in an L around it (S, M to the left; L, XL
+   above), click a size to add one to the cart.
    The square sits beside the links, not inside them — a button can't
    live inside a link. */
 
@@ -52,6 +53,7 @@ export default function ProductCard({ product }) {
                   <button
                     key={s}
                     type="button"
+                    className={`quick-add__size--${s}`}
                     disabled={!inStock}
                     tabIndex={quickOpen ? 0 : -1}
                     aria-label={inStock ? `Add size ${s} to cart` : `Size ${s} is sold out`}
