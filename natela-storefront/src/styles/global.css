@@ -3158,3 +3158,10 @@ tbody tr:hover {
 .address-form__grid .is-wide {
   grid-column: 1 / -1;
 }
+
+/* Footer Instagram link: icon beside the text. */
+.footer__social {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
