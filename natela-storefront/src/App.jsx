@@ -13,6 +13,8 @@ import CheckoutSuccess from "./pages/CheckoutSuccess";
 import Product from "./pages/Product";
 import About from "./pages/About";
 import Guides from "./pages/Guides";
+import RefundPolicy from "./pages/RefundPolicy";
+import Contact from "./pages/Contact";
 import SignIn from "./pages/SignIn";
 import Account from "./pages/Account";
 
@@ -58,6 +60,8 @@ export default function App() {
         <Route path="/about" element={<About />} />
         <Route path="/size-guide" element={<Guides tab="size" />} />
         <Route path="/care-guide" element={<Guides tab="care" />} />
+        <Route path="/refund-policy" element={<RefundPolicy />} />
+        <Route path="/contact" element={<Contact />} />
         <Route path="/checkout/success" element={<CheckoutSuccess />} />
         <Route path="/account" element={<Account />} />
         <Route path="/account/sign-in" element={<SignIn />} />

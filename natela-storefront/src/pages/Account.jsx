@@ -12,7 +12,8 @@ import ShortsIcon from "../components/ShortsIcon";
      Account information   email, name, phone (optional), saved addresses,
                          saved cards
      Order history         every past order
-     Subscription          newsletter / email updates on or off
+     Subscription          the Fight Card (newsletter) on or off; the same
+                           list the footer's "Join Our Fight Card" adds to
 
    The tab is in the URL (?tab=orders), so it survives a refresh and can be
    linked to. Cards are added on Stripe's own page, so card numbers never
@@ -738,7 +739,7 @@ function Subscription({ call, verified, email }) {
     try {
       const { newsletter } = await call("/account/newsletter", { method: "PUT", body: { subscribed: !subscribed } });
       setSubscribed(newsletter);
-      setMsg(newsletter ? "You're subscribed. Welcome to the team!" : "You've been unsubscribed.");
+      setMsg(newsletter ? "You're on the Fight Card. Welcome to the team!" : "You've left the Fight Card.");
     } catch (err) {
       setError(err.message);
     }
@@ -746,10 +747,10 @@ function Subscription({ call, verified, email }) {
   }
 
   return (
-    <Section title="Newsletter">
+    <Section title="Fight Card">
       <p className="account-copy">
-        New releases, restocks and members-only offers from Natela Fit, sent to <strong>{email}</strong>. No spam, and
-        you can unsubscribe any time.
+        Be the first to know about new collections and exclusive offers, sent to <strong>{email}</strong>. No spam, and
+        you can leave any time.
       </p>
       {error && <p className="account-error">{error}</p>}
       {!verified ? (
@@ -769,7 +770,7 @@ function Subscription({ call, verified, email }) {
             >
               <span aria-hidden="true" />
             </button>
-            <span>{subscribed ? "Subscribed" : "Not subscribed"}</span>
+            <span>{subscribed ? "Subscribed to the Fight Card" : "Not subscribed"}</span>
           </div>
         )
       )}
