@@ -79,6 +79,27 @@ export default function ChatWidget() {
     }
   }
 
+  /* "New chat": forget this conversation and start a fresh one (greeting
+     and preset questions again). The old one stays on the server, so if
+     it was handed to the owner they can still see it in the admin. */
+  async function resetChat() {
+    if (starting || sending) return;
+    save(CONVERSATION_KEY, null);
+    setConversation(null);
+    setInput("");
+    setError(null);
+    setStarting(true);
+    try {
+      const created = await api("/chat/conversations", { method: "POST", ...(await authOptions()) });
+      save(CONVERSATION_KEY, created.id);
+      setConversation(created);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setStarting(false);
+    }
+  }
+
   async function send(preset) {
     const text = (preset ?? input).trim();
     if (!text || sending || !conversation) return;
@@ -155,9 +176,19 @@ export default function ChatWidget() {
         <div className="chat-panel">
           <div className="chat-panel__head">
             <span className="chat-panel__title">Natela Fit help</span>
-            <button className="chat-panel__close" onClick={() => setOpen(false)} aria-label="Close chat">
-              ✕
-            </button>
+            <div className="chat-panel__actions">
+              <button
+                type="button"
+                className="chat-panel__new"
+                onClick={resetChat}
+                disabled={starting || sending || !conversation || conversation.messages.length <= 1}
+              >
+                New chat
+              </button>
+              <button className="chat-panel__close" onClick={() => setOpen(false)} aria-label="Close chat">
+                ✕
+              </button>
+            </div>
           </div>
 
           <div className="chat-panel__body" ref={bodyRef}>
