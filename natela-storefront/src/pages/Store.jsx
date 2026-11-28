@@ -20,7 +20,7 @@ export const HERO_DEFAULTS = {
   badge: "Koi Fish Series",
   heading: "Built for the ring. Made to last.",
   body: "Hand-finished Muay Thai shorts with a four-way stretch panel and a waistband that stays put through every round.",
-  primaryLabel: "About us",
+  primaryLabel: "Our story",
   image: "",
 };
 
