@@ -185,6 +185,17 @@ p {
   cursor: not-allowed;
 }
 
+/* iPhones zoom the page in when you tap a field whose text is under
+   16px. On touch screens every field uses 16px so that never happens
+   (the Fight Card email, chat box, account and checkout fields). */
+@media (hover: none) and (pointer: coarse) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
 /* ---------- form fields ---------- */
 .fld {
   width: 100%;
@@ -780,25 +791,30 @@ tbody tr:hover {
 }
 
 /* ---------- chat widget ---------- */
+/* Launcher: just the line-drawn speech bubble from ChatWidget.jsx, no
+   filled circle behind it. The soft shadow keeps it visible on photos. */
 .chat-bubble {
   position: fixed;
-  right: 24px;
-  bottom: 24px;
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: var(--brand-gradient);
-  color: #fff;
+  right: 20px;
+  bottom: 20px;
+  width: 50px;
+  height: 50px;
+  padding: 0;
+  background: none;
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 28px;
-  line-height: 1;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  line-height: 0;
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.2));
   cursor: pointer;
   z-index: 60;
   transition: transform 0.18s ease;
+}
+.chat-bubble:focus-visible {
+  outline: 2px solid var(--brand-red);
+  outline-offset: 2px;
+  border-radius: 8px;
 }
 .chat-bubble:hover {
   transform: translateY(-2px);
@@ -822,7 +838,7 @@ tbody tr:hover {
 .chat-panel {
   position: fixed;
   right: 24px;
-  bottom: 100px;
+  bottom: 82px;
   width: 340px;
   max-width: calc(100vw - 32px);
   height: 460px;

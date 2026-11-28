@@ -117,15 +117,33 @@ export default function ChatWidget() {
   return (
     <>
       <button className="chat-bubble" onClick={() => (open ? setOpen(false) : openPanel())} aria-label={open ? "Close chat" : "Chat with us"}>
-        {open ? (
-          "✕"
-        ) : (
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <circle cx="6" cy="12" r="2.2" />
-            <circle cx="12" cy="12" r="2.2" />
-            <circle cx="18" cy="12" r="2.2" />
-          </svg>
-        )}
+        {/* Outline speech bubble: brand orange → red line, white inside
+            (the --brand-orange / --brand-red hexes; SVG attributes can't
+            use CSS vars). Three dots when closed, an ✕ when open. */}
+        <svg width="46" height="46" viewBox="0 0 48 48" aria-hidden="true">
+          <defs>
+            <linearGradient id="chat-bubble-line" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stopColor="#fbb040" />
+              <stop offset="1" stopColor="#e93e3a" />
+            </linearGradient>
+          </defs>
+          <path
+            d="M10 7h28a6 6 0 0 1 6 6v15a6 6 0 0 1-6 6H22l-9 8v-8h-3a6 6 0 0 1-6-6V13a6 6 0 0 1 6-6z"
+            fill="#fff"
+            stroke="url(#chat-bubble-line)"
+            strokeWidth="2.5"
+            strokeLinejoin="round"
+          />
+          {open ? (
+            <path d="M19 15l10 10M29 15l-10 10" stroke="#e93e3a" strokeWidth="2.5" strokeLinecap="round" />
+          ) : (
+            <g fill="#e93e3a">
+              <circle cx="16" cy="20.5" r="2" />
+              <circle cx="24" cy="20.5" r="2" />
+              <circle cx="32" cy="20.5" r="2" />
+            </g>
+          )}
+        </svg>
       </button>
 
       {open && (
